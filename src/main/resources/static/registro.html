@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Paciente - FisioLG</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #2c3e50; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background: #218838; }
+        .info { font-size: 12px; color: #666; text-align: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Finaliza tu Reserva</h2>
+    <p id="cita-info" style="text-align: center; font-weight: bold; color: #88c057;"></p>
+
+    <form id="formRegistro">
+        <input type="text" id="nombre" placeholder="Nombre completo" required>
+        <input type="email" id="email" placeholder="Correo electrónico" required>
+        <input type="tel" id="telefono" placeholder="Teléfono" required>
+        <button type="submit" id="btnConfirmar">Confirmar y Reservar</button>
+    </form>
+
+    <p class="info">Conforme a la RGPD, tus datos se tratarán con total confidencialidad.</p>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const citaId = urlParams.get('citaId');
+
+    if (citaId) {
+        document.getElementById('cita-info').innerText = "Confirmando cita #" + citaId;
+    } else {
+        alert("Atención: No has seleccionado ninguna cita.");
+        window.location.href = "calendario.html";
+    }
+
+    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnConfirmar');
+        btn.disabled = true; // Evitamos doble clic
+        btn.innerText = "Procesando...";
+
+        const datosPaciente = {
+            nombre: document.getElementById('nombre').value,
+            email: document.getElementById('email').value,
+            telefono: document.getElementById('telefono').value
+        };
+
+        try {
+            // PASO 1: CREAR AL PACIENTE (POST)
+            // Esto guarda a la persona en la tabla 'pacientes'
+            const respPaciente = await fetch('http://localhost:8080/api/pacientes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosPaciente)
+            });
+
+            if (!respPaciente.ok) throw new Error("Error al crear el paciente");
+
+            const pacienteCreado = await respPaciente.json();
+            const nuevoId = pacienteCreado.id; // Obtenemos el ID real generado por la DB
+
+            // PASO 2: ASIGNAR EL NUEVO ID A LA CITA (PUT)
+            const respCita = await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    estado: "CONFIRMADA",
+                    pacienteId: nuevoId // Usamos el ID de la persona que se acaba de registrar
+                })
+            });
+
+            if (respCita.ok) {
+                alert(`✅ ¡Reserva completada con éxito para ${datosPaciente.nombre}!`);
+                window.location.href = "calendario.html";
+            } else {
+                alert("Error al vincular la cita.");
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            alert("No se pudo completar la reserva. Revisa que el servidor esté activo.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Confirmar y Reservar";
+        }
+    });
+</script>
+</body>
+</html>
