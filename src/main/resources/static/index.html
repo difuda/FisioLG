@@ -11,12 +11,7 @@
     <style>
         :root { --verde-corp: #88c057; --gris-f: #f0f2f2; }
 
-        body {
-            background-color: var(--gris-f);
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-        }
+        body { background-color: var(--gris-f); font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
 
         .background-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
@@ -29,69 +24,36 @@
         .logo-img { height: 100px; width: auto; mix-blend-mode: multiply; filter: contrast(110%); }
         .admin-title-sm {
             font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; color: #333;
-            letter-spacing: -1.5px; text-shadow: 1px 1px 0px #fff, 2px 2px 0px #d1d1d1, 3px 3px 0px #b5b5b5, 4px 4px 8px rgba(0,0,0,0.15);
+            letter-spacing: -1.5px; text-shadow: 1px 1px 0px #fff, 2px 2px 0px #d1d1d1, 4px 4px 8px rgba(0,0,0,0.15);
             text-decoration: none; margin-left: 25px;
         }
 
         .hero-section { padding: 20px 0 30px; text-align: center; }
         .hero-section h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; }
 
-        .slider-wrapper {
-            width: 100%;
-            max-width: 1100px;
-            margin: 0 auto;
-            overflow: hidden;
-            position: relative;
-        }
 
-        .carrusel-contenedor {
-            display: flex;
-            gap: 25px;
-            padding: 20px 0;
-            transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95);
-        }
-
-        .card-realismo {
-            flex: 0 0 350px;
-            height: 400px;
-            border-radius: 25px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            border: none;
-            background: #fff;
-        }
-
+        .slider-wrapper { width: 100%; max-width: 1100px; margin: 0 auto; overflow: hidden; position: relative; }
+        .carrusel-contenedor { display: flex; gap: 25px; padding: 20px 0; transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
+        .card-realismo { flex: 0 0 350px; height: 400px; border-radius: 25px; overflow: hidden; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: none; background: #fff; transition: transform 0.4s ease; cursor: pointer; }
+        .card-realismo:hover { transform: translateY(-15px); box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
         .card-realismo img { width: 100%; height: 100%; object-fit: cover; }
+        .overlay-texto { position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px 20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; }
 
-        .card-realismo {
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
-            cursor: pointer;
-        }
-
-        .card-realismo:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-
-        .overlay-texto {
-            position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px 20px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white;
-        }
-        .card-noticias-admin {
-            background-color: var(--verde-corp) !important; color: white;
-            display: flex; flex-direction: column; justify-content: center; padding: 40px; text-align: center;
-        }
+        .card-noticias-admin { background-color: var(--verde-corp) !important; color: white; display: flex; flex-direction: column; justify-content: center; padding: 40px; text-align: center; }
         .card-noticias-admin i { font-size: 3.5rem; margin-bottom: 20px; }
-        .noticia-texto { font-size: 1.1rem; line-height: 1.6; font-style: italic; }
+
 
         .registro-container { background: white; border-radius: 30px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); }
         .btn-primary { background-color: var(--verde-corp) !important; border: none; padding: 15px; font-weight: 700; border-radius: 12px; }
         .form-control { border-radius: 10px; padding: 12px; background-color: #fcfcfc; border: 1px solid #e0e0e0; }
-        .text-verde { color: var(--verde-corp) !important; font-weight: 600; cursor: pointer; }
+        .text-verde { color: var(--verde-corp) !important; font-weight: 600; cursor: pointer; text-decoration: none; }
 
+        .main-footer { background-color: #1a1a1a; color: #ffffff; padding: 40px 0 20px 0; margin-top: 50px; }
+        .footer-content { display: flex; justify-content: space-around; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .footer-section { flex: 1; margin-bottom: 20px; min-width: 250px; }
+        .footer-bottom { text-align: center; border-top: 1px solid #333; margin-top: 30px; padding-top: 20px; font-size: 12px; color: #777; }
 
+        @media (max-width: 768px) { .admin-title-sm { font-size: 2rem; } .footer-content { flex-direction: column; text-align: center; } }
     </style>
 </head>
 <body>
@@ -100,7 +62,7 @@
 
 <nav class="navbar">
     <div class="container d-flex justify-content-center align-items-center">
-        <a class="navbar-brand d-flex align-items-center" href="#">
+        <a class="navbar-brand d-flex align-items-center" href="index.html">
             <img src="img/locoblanco.png" alt="Logo" class="logo-img">
             <span class="admin-title-sm">Lucía Garza</span>
         </a>
@@ -131,7 +93,7 @@
         </div>
         <div class="card-realismo">
             <img src="img/sesion2.png" alt="Sesiones">
-            <div class="overlay-texto"><h5>Sesiones</h5><p class="small mb-0">Empatía.Conocimientos.Experiencia.Confort para tu recuperación.</p></div>
+            <div class="overlay-texto"><h5>Sesiones</h5><p class="small mb-0">Empatía y experiencia para tu recuperación.</p></div>
         </div>
     </div>
 </section>
@@ -142,7 +104,7 @@
             <div class="col-lg-8">
                 <div class="registro-container shadow-sm p-4 bg-white rounded-4">
                     <h2 class="fw-bold text-center mb-4">Solicitar Cita</h2>
-                    <div class="row g-3">
+                    <div class="row g-3" id="formularioDatos">
                         <div class="col-md-6"><label class="form-label small fw-bold">Nombre</label><input type="text" id="nombre" class="form-control" placeholder="Ej: Lucía"></div>
                         <div class="col-md-6"><label class="form-label small fw-bold">Apellidos</label><input type="text" id="apellidos" class="form-control" placeholder="Ej: García"></div>
                         <div class="col-md-6"><label class="form-label small fw-bold">DNI</label><input type="text" id="dni" class="form-control" placeholder="12345678X"></div>
@@ -153,7 +115,7 @@
                             <div class="form-check p-3 bg-light rounded-3">
                                 <input class="form-check-input ms-0 me-2" type="checkbox" id="checkRGPD">
                                 <label class="form-check-label small" for="checkRGPD">
-                                    Acepto la <a href="javascript:void(0)" class="text-verde fw-bold" data-bs-toggle="modal" data-bs-target="#modal1">Política de Privacidad</a> y el <a href="javascript:void(0)" class="text-verde fw-bold" data-bs-toggle="modal" data-bs-target="#modal2">Consentimiento Informado</a>
+                                    Acepto la <a href="#" class="text-verde" data-bs-toggle="modal" data-bs-target="#modal1">Política de Privacidad</a>
                                 </label>
                             </div>
                         </div>
@@ -163,17 +125,16 @@
                         </div>
                     </div>
 
-                    <div id="aviso-correo" class="mt-3 alert alert-info text-center d-none" style="border: 1px dashed #31708f;">
+                    <div id="aviso-correo" class="mt-3 alert alert-info text-center d-none">
                         <i class="bi bi-envelope-check-fill me-2"></i>
-                        <strong>¡Código enviado!</strong> Por favor, revisa tu bandeja de entrada. <br>
-                        <small>Si no lo recibes en un minuto, mira en la carpeta de <b>Correo no deseado (Spam)</b>.</small>
+                        <strong>¡Código enviado!</strong> Revisa tu bandeja de entrada (y la carpeta de Spam).
                     </div>
 
                     <div id="seccion-verificacion" class="mt-4 p-4 text-center border-top" style="display:none;">
-                        <p class="fw-bold text-success mb-3">Introduce el código enviado a tu email</p>
+                        <p class="fw-bold text-success mb-3">Introduce el código de 6 dígitos</p>
                         <div class="d-flex gap-2 justify-content-center">
-                            <input type="text" id="codigoIntroducido" class="form-control text-center fs-4" style="max-width: 160px;" placeholder="000000">
-                            <button class="btn btn-dark px-4" onclick="verificarYIrACalendario()">VERIFICAR</button>
+                            <input type="text" id="codigoIntroducido" class="form-control text-center fs-4" style="max-width: 160px;" maxlength="6">
+                            <button class="btn btn-dark px-4" id="btnVerificar" onclick="verificarYRegistrar()">VERIFICAR</button>
                         </div>
                     </div>
                 </div>
@@ -182,184 +143,96 @@
     </div>
 </section>
 
-
-<div class="modal fade" id="modal1" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fw-bold">Información detallada sobre Protección de Datos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: #333;">
-                <p><strong>¿Quién es el Responsable del tratamiento de sus datos?</strong></p>
-                <p>En LUCIA GARZA VAZQUEZ tratamos la información que nos facilita con el fin de realizar la prestación de los servicios de fisioterapia y osteopatía solicitados, así como realizar la facturación de los mismos.</p>
-
-                <div class="p-3 bg-light border rounded mb-3">
-                    <strong>Identidad:</strong> LUCIA GARZA VAZQUEZ - CIF: 44470286Q<br>
-                    <strong>Dirección Postal:</strong> ROSALÍA DE CASTRO, Nº16, 1B, 32500, CARBALLIÑO, O (OURENSE)<br>
-                    <strong>Teléfono:</strong> 610859424 / 644476621<br>
-                    <strong>Email:</strong> fisioterapialuciagarza@gmail.com
-                </div>
-
-                <p><strong>¿Con qué finalidad tratamos sus datos personales?</strong></p>
-                <p>Tratamos la información con el fin de gestionar la agenda de citas, mantener un historial clínico actualizado para su correcto tratamiento sanitario y cumplir con las obligaciones legales contables y fiscales.</p>
-
-                <p><strong>¿Por cuánto tiempo conservaremos sus datos?</strong></p>
-                <p>Los datos personales proporcionados se conservarán mientras se mantenga la relación asistencial o durante los años necesarios para cumplir con las obligaciones legales (mínimo 5 años para historias clínicas según la normativa vigente).</p>
-
-                <p><strong>¿Cuál es la legitimación para el tratamiento de sus datos?</strong></p>
-                <p>La base legal para el tratamiento de sus datos es la ejecución del contrato de servicios sanitarios y el cumplimiento de obligaciones legales. El tratamiento de datos de salud está legitimado por ser necesario para la asistencia sanitaria.</p>
-
-                <p><strong>¿A qué destinatarios se comunicarán sus datos?</strong></p>
-                <p>Le informamos que su información podrá ser cedida a encargados de tratamiento para la gestión contable y administrativa o debido a obligaciones legales aplicables (Administración Tributaria, centros sanitarios en caso de derivación, etc.). No se prevén transferencias internacionales de datos.</p>
-
-                <p><strong>¿Cuáles son sus derechos?</strong></p>
-                <p>Usted tiene derecho a obtener confirmación sobre si estamos tratando sus datos personales. Tiene derecho a acceder a sus datos, solicitar la rectificación de datos inexactos o solicitar su supresión cuando los datos ya no sean necesarios. También puede solicitar la limitación u oposición del tratamiento y la portabilidad de sus datos. Para ejercer estos derechos, envíe un escrito adjuntando copia de su DNI al email: fisioterapialuciagarza@gmail.com. Asimismo, tiene derecho a reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
-            </div>
-        </div>
+<footer class="main-footer">
+    <div class="footer-content">
+        <div class="footer-section"><h3>FisioLG</h3><p>Clínica Lucía Garza. Tu salud en buenas manos.</p></div>
+        <div class="footer-section"><h4>Contacto</h4><p>Carballiño, Ourense<br>Tlf: 644 476 621</p></div>
     </div>
-</div>
-
-<div class="modal fade" id="modal2" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fw-bold">Consentimiento Informado y Datos Protegidos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" style="font-size: 0.85rem;">
-                <p>LUCIA GARZA VAZQUEZ le informa, que para la prestación del servicio solicitado será necesario el tratamiento de datos personales especialmente protegidos (establecidos en el Art. 9.1 del RGPD 2016/679). La entidad se compromete a cumplir y adoptar las medidas de seguridad necesarias para garantizar la seguridad, integridad y confidencialidad de los datos a los que tenga acceso, obligándose al secreto profesional respecto de los mismos.</p>
-
-                <table class="table table-bordered mt-3">
-                    <tbody>
-                    <tr>
-                        <th class="bg-light" style="width: 30%;">Responsable</th>
-                        <td>LUCIA GARZA VAZQUEZ, NIF: 44470286Q, TLF: 644476621, EMAIL: fisioterapialuciagarza@gmail.com</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">Finalidades</th>
-                        <td>Prestación de servicios de fisioterapia solicitados. Gestión del historial clínico y seguimiento del paciente.</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">Legitimación</th>
-                        <td>Ejecución de un contrato de prestación de servicios. Cumplimiento de obligación legal en el ámbito sanitario.</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">Destinatarios</th>
-                        <td>No se facilitarán datos a terceros, salvo obligación legal o necesidad vinculada a la gestión contable/fiscal.</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">Derechos</th>
-                        <td>Usted tiene derecho al acceso, rectificación, oposición, limitación, portabilidad y supresión de sus datos, así como a retirar su consentimiento ante el responsable o ante la Agencia Española de Protección de Datos (AEPD).</td>
-                    </tr>
-                    </tbody>
-                </table>
-                <hr>
-                <div class="p-3 bg-light rounded shadow-sm border">
-                    <p class="mb-0 fw-bold"><i class="bi bi-check-circle-fill text-success me-2"></i> DECLARACIÓN DE CONFORMIDAD:</p>
-                    <p class="mb-0 mt-2">El paciente/usuario acepta voluntariamente el tratamiento de fisioterapia propuesto, habiendo sido informado de las técnicas a realizar y sus posibles riesgos o beneficios. Al marcar la casilla de aceptación en el formulario, usted otorga su consentimiento expreso para el tratamiento de sus datos de salud con las finalidades arriba indicadas.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <div class="footer-bottom"><p>&copy; 2026 FisioLG - Todos los derechos reservados.</p></div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+
     const carrusel = document.getElementById('carrusel');
     const tarjetas = document.querySelectorAll('.card-realismo');
-    const gap = 25;
-    const tarjetaAncho = 350 + gap;
-
-    tarjetas.forEach(tarjeta => {
-        let clone = tarjeta.cloneNode(true);
-        carrusel.appendChild(clone);
-    });
-
     let index = 0;
-    function moverCarrusel() {
+    setInterval(() => {
         index++;
         carrusel.style.transition = "transform 0.8s ease-in-out";
-        carrusel.style.transform = `translateX(-${index * tarjetaAncho}px)`;
-
+        carrusel.style.transform = `translateX(-${index * (350 + 25)}px)`;
         if (index >= tarjetas.length) {
-            setTimeout(() => {
-                carrusel.style.transition = "none";
-                index = 0;
-                carrusel.style.transform = `translateX(0)`;
-            }, 800);
+            setTimeout(() => { carrusel.style.transition = "none"; index = 0; carrusel.style.transform = `translateX(0)`; }, 800);
         }
-    }
-    setInterval(moverCarrusel, 4000);
+    }, 4000);
 
 
-    function solicitarCodigo() {
+    async function solicitarCodigo() {
         const email = document.getElementById('email').value;
-        const btn = document.getElementById('btnSolicitar'); // Asegúrate de que el botón tenga este ID
-        const aviso = document.getElementById('aviso-correo'); // El div azul de aviso
+        const btn = document.getElementById('btnSolicitar');
 
-        if (!email) {
-            alert("Introduce un email.");
-            return;
-        }
-        if (!document.getElementById('checkRGPD').checked) {
-            alert("Debes aceptar la política de protección de datos.");
+        if (!email || !document.getElementById('checkRGPD').checked) {
+            alert("Completa el email y acepta la política de privacidad.");
             return;
         }
 
-        // Feedback visual: desactivamos el botón mientras se envía
-        if(btn) {
-            btn.disabled = true;
-            btn.innerText = "ENVIANDO...";
-        }
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
 
-        // Generamos el código (esto está perfecto)
-        codigoLocal = Math.floor(100000 + Math.random() * 900000).toString();
+        try {
 
-        fetch('/api/mail/enviar-codigo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                destinatario: email,
-                codigo: codigoLocal
-            })
-        })
-        .then(response => {
+            const response = await fetch(`/api/auth/send-otp?email=${encodeURIComponent(email)}`, { method: 'POST' });
+
             if (response.ok) {
-                // 1. Mostramos la sección para meter los números
                 document.getElementById('seccion-verificacion').style.display = 'block';
-
-                // 2. MOSTRAMOS EL AVISO DE CORREO/SPAM (Lo que faltaba)
-                if(aviso) aviso.classList.remove('d-none');
-
-                // 3. Ocultamos el botón de solicitar para no liar al usuario
-                if(btn) btn.parentElement.style.display = 'none';
-
-                console.log("Email enviado con éxito.");
+                document.getElementById('aviso-correo').classList.remove('d-none');
+                btn.innerText = "Código Enviado";
             } else {
-                alert("Error en el servidor. Revisa la consola de IntelliJ.");
-                if(btn) {
-                    btn.disabled = false;
-                    btn.innerText = "SOLICITAR CÓDIGO DE VERIFICACIÓN";
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("No se pudo conectar con el servidor.");
-            if(btn) {
+                alert("Error al enviar el email. Verifica que sea correcto.");
                 btn.disabled = false;
-                btn.innerText = "SOLICITAR CÓDIGO DE VERIFICACIÓN";
+                btn.innerText = "SOLICITAR CÓDIGO";
             }
-        });
+        } catch (error) {
+            alert("Error de conexión con el servidor.");
+            btn.disabled = false;
+        }
     }
 
-    function verificarYIrACalendario() {
-        if (document.getElementById('codigoIntroducido').value === codigoLocal) { window.location.href = "calendario.html"; }
-        else { alert("Código incorrecto."); }
+    async function verificarYRegistrar() {
+        const email = document.getElementById('email').value;
+        const codigo = document.getElementById('codigoIntroducido').value;
+        const btnVerificar = document.getElementById('btnVerificar');
+
+
+        const respAuth = await fetch(`/api/auth/verify-otp?email=${email}&code=${codigo}`, { method: 'POST' });
+
+        if (respAuth.ok) {
+            // 2. Si el código es ok, registramos al paciente antes de ir al calendario
+            const datosPaciente = {
+                nombre: document.getElementById('nombre').value,
+                apellidos: document.getElementById('apellidos').value,
+                dni: document.getElementById('dni').value,
+                telefono: document.getElementById('telefono').value,
+                email: email
+            };
+
+            const respReg = await fetch('/api/pacientes/registrar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosPaciente)
+            });
+
+            if (respReg.ok) {
+                localStorage.setItem('pacienteEmail', email);
+                window.location.href = "calendario.html";
+            } else {
+                alert("Error al registrar tus datos. Inténtalo de nuevo.");
+            }
+        } else {
+            alert("Código incorrecto o caducado.");
+        }
     }
 </script>
-
 </body>
 </html>

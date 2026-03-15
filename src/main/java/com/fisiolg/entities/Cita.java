@@ -11,105 +11,62 @@ public class Cita {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "paciente_id")
-    private Long pacienteId;
-
-    @Column(name = "fisio_id")
-    private Long fisioId;
-
-    @Column(name = "servicio_id")
-    private Long servicioId;
-
-    @Enumerated(EnumType.ORDINAL)
-    @Column(name = "estado_id")
-    private EstadoCita estadoId;
-
-    @Column(name = "estado")
-    private String estado;
-
-    @Column(name = "fecha_hora")
+    @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
 
+    @OneToOne
+    @JoinColumn(name = "turno_id")
+    private Turno turno;
+
+    @ManyToOne
+    @JoinColumn(name = "paciente_id")
+    private Paciente paciente;
+
+    @ManyToOne
+    @JoinColumn(name = "fisio_id")
+    private Fisio fisio;
+
+
+    @ManyToOne
+    @JoinColumn(name = "servicio_id")
+    private Servicio servicio;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoCita estado;
+
+    @Column(columnDefinition = "TEXT")
+    private String notas;
+
     @Column(name = "recordatorio_enviado")
-    private Boolean recordatorioEnviado;
-
-    @Column(name = "notas_clinicas", columnDefinition = "TEXT")
-    private String notasClinicas;
-
+    private boolean recordatorioEnviado = false;
 
     public Cita() {}
 
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public LocalDateTime getFechaHora() { return fechaHora; }
+    public void setFechaHora(LocalDateTime fechaHora) { this.fechaHora = fechaHora; }
+
+    public Turno getTurno() { return turno; }
+    public void setTurno(Turno turno) { this.turno = turno; }
+
+    public Paciente getPaciente() { return paciente; }
+    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+
+    public Fisio getFisio() { return fisio; }
+    public void setFisio(Fisio fisio) { this.fisio = fisio; }
 
 
-    public Long getId() {
-        return id;
-    }
+    public Servicio getServicio() { return servicio; }
+    public void setServicio(Servicio servicio) { this.servicio = servicio; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public EstadoCita getEstado() { return estado; }
+    public void setEstado(EstadoCita estado) { this.estado = estado; }
 
-    public Long getPacienteId() {
-        return pacienteId;
-    }
+    public String getNotas() { return notas; }
+    public void setNotas(String notas) { this.notas = notas; }
 
-    public void setPacienteId(Long pacienteId) {
-        this.pacienteId = pacienteId;
-    }
-
-    public Long getFisioId() {
-        return fisioId;
-    }
-
-    public void setFisioId(Long fisioId) {
-        this.fisioId = fisioId;
-    }
-
-    public Long getServicioId() {
-        return servicioId;
-    }
-
-    public void setServicioId(Long servicioId) {
-        this.servicioId = servicioId;
-    }
-
-    public EstadoCita getEstadoId() {
-        return estadoId;
-    }
-
-    public void setEstadoId(EstadoCita estadoId) {
-        this.estadoId = estadoId;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public LocalDateTime getFechaHora() {
-        return fechaHora;
-    }
-
-    public void setFechaHora(LocalDateTime fechaHora) {
-        this.fechaHora = fechaHora;
-    }
-
-    public Boolean isRecordatorioEnviado() {
-        return recordatorioEnviado;
-    }
-
-    public void setRecordatorioEnviado(Boolean recordatorioEnviado) {
-        this.recordatorioEnviado = recordatorioEnviado;
-    }
-
-    public String getNotasClinicas() {
-        return notasClinicas;
-    }
-
-    public void setNotasClinicas(String notasClinicas) {
-        this.notasClinicas = notasClinicas;
-    }
+    public boolean isRecordatorioEnviado() { return recordatorioEnviado; }
+    public void setRecordatorioEnviado(boolean recordatorioEnviado) { this.recordatorioEnviado = recordatorioEnviado; }
 }

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Cita - FisioLG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --verde: #88c057; --azul: #2c3e50; }
+        body { background: #f0f2f2; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-reserva { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .grid-horas { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+        .btn-hora { padding: 10px; background: white; border: 2px solid var(--verde); color: var(--verde); border-radius: 10px; font-weight: bold; transition: 0.3s; }
+        .btn-hora:hover { background: var(--verde); color: white; }
+        .form-control { border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .step { display: none; animation: fadeIn 0.4s; }
+        .btn-main { background: var(--verde); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="card-reserva">
+    <h2 class="text-center fw-bold mb-4" style="color: var(--azul)">Reserva en FisioLG</h2>
+
+    <div id="p1" class="step" style="display: block;">
+        <p class="text-muted">Introduce tu email para validar el acceso.</p>
+        <input type="email" id="email" class="form-control" placeholder="tu@email.com">
+        <button onclick="enviarOTP()" id="btnSend" class="btn-main">ENVIAR CÓDIGO</button>
+        <div id="otpInput" class="mt-3" style="display:none">
+            <input type="text" id="code" class="form-control text-center fs-4" placeholder="000000" maxlength="6">
+            <button onclick="verificarOTP()" class="btn-main" style="background:var(--azul)">VERIFICAR</button>
+        </div>
+    </div>
+
+    <div id="p2" class="step">
+        <h5 class="fw-bold mb-3">Elige tu hora (40 min)</h5>
+        <div id="lista-horas" class="grid-horas mb-4"></div>
+    </div>
+
+    <div id="p3" class="step">
+        <h5 class="fw-bold mb-3">Tus Datos</h5>
+        <form id="formFinal">
+            <div class="row g-2">
+                <div class="col-6"><input type="text" id="nom" class="form-control" placeholder="Nombre" required></div>
+                <div class="col-6"><input type="text" id="ape" class="form-control" placeholder="Apellidos" required></div>
+            </div>
+            <input type="text" id="dni" class="form-control" placeholder="DNI" required>
+            <input type="tel" id="tel" class="form-control" placeholder="Teléfono" required>
+            <label class="small text-muted"><input type="checkbox" required> Acepto la protección de datos (RGPD).</label>
+            <button type="submit" class="btn-main mt-3">CONFIRMAR CITA</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let citaId = null, email = "";
+
+    const show = (id) => {
+        document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    };
+
+    async function enviarOTP() {
+        email = document.getElementById('email').value;
+        if(!email) return alert("Email requerido");
+        const res = await fetch(`/api/auth/send-otp?email=${email}`, { method: 'POST' });
+        if(res.ok) { document.getElementById('otpInput').style.display='block'; document.getElementById('btnSend').style.display='none'; }
+    }
+
+    async function verificarOTP() {
+        const code = document.getElementById('code').value;
+        const res = await fetch(`/api/auth/verify-otp?email=${email}&code=${code}`, { method: 'POST' });
+        if(res.ok) { show('p2'); cargarCitas(); } else alert("Error en código");
+    }
+
+    async function cargarCitas() {
+        const res = await fetch('/api/citas/disponibles');
+        const citas = await res.json();
+        const div = document.getElementById('lista-horas');
+        div.innerHTML = "";
+        citas.forEach(c => {
+            const h = c.start.split("T")[1].substring(0, 5);
+            div.innerHTML += `<button class="btn-hora" onclick="selCita(${c.id})">${h}</button>`;
+        });
+    }
+
+    const selCita = (id) => { citaId = id; show('p3'); };
+
+    document.getElementById('formFinal').onsubmit = async (e) => {
+        e.preventDefault();
+        const pac = { nombre: document.getElementById('nom').value, apellidos: document.getElementById('ape').value, dni: document.getElementById('dni').value, email, telefono: document.getElementById('tel').value };
+
+        const resP = await fetch('/api/pacientes/registro', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(pac) });
+        const pData = await resP.json();
+
+        await fetch(`/api/citas/actualizar/${citaId}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ pacienteId: pData.id, estado: "CONFIRMADA" }) });
+
+        alert("¡Cita reservada!");
+        location.reload();
+    };
+</script>
+</body>
+</html>

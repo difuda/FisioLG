@@ -8,25 +8,39 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-
     @Autowired
     private JavaMailSender mailSender;
 
-    public void enviarCodigo(String destinatario, String codigo) {
+
+    public void enviarCorreo(String destinatario, String asunto, String cuerpo) {
         SimpleMailMessage message = new SimpleMailMessage();
-
-
-        message.setFrom("fisioterapialuciagarza@gmail.com");
         message.setTo(destinatario);
+        message.setSubject(asunto);
+        message.setText(cuerpo);
+        mailSender.send(message);
+    }
+
+
+    public void enviarCodigo(String to, String code) {
+        enviarCodigoVerificacion(to, code);
+    }
+
+    public void enviarCodigoVerificacion(String to, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
         message.setSubject("Código de Verificación - Clínica FisioLG");
+        message.setText("Tu código de verificación es: " + code +
+                "\n\nEste código es necesario para completar tu reserva.");
+        mailSender.send(message);
+    }
 
 
-        message.setText("Hola,\n\n" +
-                "Para continuar con su reserva en FisioLG, use el siguiente código:\n\n" +
-                "CÓDIGO: " + codigo + "\n\n" +
-                "Si no ha solicitado este código, ignore este correo.");
-
-
+    public void enviarConfirmacionCita(String to, String fechaHora) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Confirmación de Reserva - Clínica FisioLG");
+        message.setText("¡Hola! Tu reserva ha sido confirmada para el día: " + fechaHora +
+                "\n\nRecuerda que estamos en la calle Principal. Si necesitas anularla, hazlo con 24h de antelación.");
         mailSender.send(message);
     }
 }

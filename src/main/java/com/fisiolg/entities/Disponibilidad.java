@@ -11,45 +11,41 @@ public class Disponibilidad {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "fisio_id")
-    private Long fisioId;
+    @ManyToOne
+    @JoinColumn(name = "fisio_id")
+    private Fisio fisio;
 
-    @Column(name = "dia_semana")
-    private Integer diaSemana;
+    @Column(name = "dia_semana", nullable = false)
+    private Integer diaSemana; // 1 para Lunes, 7 para Domingo
 
-    @Column(name = "hora_inicio")
+    @Column(name = "hora_inicio", nullable = false)
     private LocalTime horaInicio;
 
-    @Column(name = "hora_fin")
+    @Column(name = "hora_fin", nullable = false)
     private LocalTime horaFin;
 
+    public Disponibilidad() {}
 
-    public Disponibilidad() {
+    public Disponibilidad(Fisio fisio, Integer diaSemana, LocalTime horaInicio, LocalTime horaFin) {
+        this.fisio = fisio;
+        this.diaSemana = diaSemana;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
     }
 
 
-    public Long getId() {
-        return id; }
-    public void setId(Long id) {
-        this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getFisioId() {
-        return fisioId; }
-    public void setFisioId(Long fisioId) {
-        this.fisioId = fisioId; }
+    public Fisio getFisio() { return fisio; }
+    public void setFisio(Fisio fisio) { this.fisio = fisio; }
 
-    public Integer getDiaSemana() {
-        return diaSemana; }
-    public void setDiaSemana(Integer diaSemana) {
-        this.diaSemana = diaSemana; }
+    public Integer getDiaSemana() { return diaSemana; }
+    public void setDiaSemana(Integer diaSemana) { this.diaSemana = diaSemana; }
 
-    public LocalTime getHoraInicio() {
-        return horaInicio; }
-    public void setHoraInicio(LocalTime horaInicio) {
-        this.horaInicio = horaInicio; }
+    public LocalTime getHoraInicio() { return horaInicio; }
+    public void setHoraInicio(LocalTime horaInicio) { this.horaInicio = horaInicio; }
 
-    public LocalTime getHoraFin() {
-        return horaFin; }
-    public void setHoraFin(LocalTime horaFin) {
-        this.horaFin = horaFin; }
+    public LocalTime getHoraFin() { return horaFin; }
+    public void setHoraFin(LocalTime horaFin) { this.horaFin = horaFin; }
 }

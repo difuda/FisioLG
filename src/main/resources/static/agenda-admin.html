@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Gestión - Clínica Fisiolg</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@6.1.8/index.global.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@6.1.10/index.global.min.js"></script>
     <style>
         body {
             background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-                        url("/img/fondocalendario.png");
+                        url("img/fondocalendario.png");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -20,88 +21,24 @@
         }
 
         #calendar {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.94);
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .fc-event {
-            border-radius: 8px !important;
-            border: none !important;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 2px 5px;
-            font-weight: 600 !important;
-            cursor: pointer;
-        }
-
-        .admin-header h2 {
-            color: white;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
-            font-size: 2.2rem;
-            letter-spacing: -1px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.9) !important;
             border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .fc-license-message { display: none !important; }
+
+        .admin-header h2 { color: white; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
+
+        .card-gestion {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
             border: none;
-            backdrop-filter: blur(5px);
-        }
-
-
-        @media (max-width: 768px) {
-             body {
-                    padding: 10px;
-             }
-
-             #calendar {
-                    padding: 10px;
-                    border-radius: 15px;
-             }
-
-
-             .admin-header h2 {
-                    font-size: 1.4rem !important;
-             }
-
-
-             .fc-timegrid-slot-label-cushion,
-                .fc-event-title {
-                    font-size: 0.75rem !important;
-             }
-
-
-             .btn-outline-light {
-                    padding: 5px 10px;
-                    font-size: 0.8rem;
-             }
-
-
-             .card-body .row {
-                    flex-direction: column;
-             }
-             .card-body .col-auto {
-                    width: 100%;
-                    margin-bottom: 10px;
-             }
-             .card-body button {
-                    width: 100%;
-             }
-        }
-
-        .fc-license-message {
-            display: none !important;
-        }
-
-
-        .fc-timegrid-slot-label-cushion {
-            font-weight: 600;
-            color: #333;
+            max-width: 1100px;
+            margin: 0 auto 20px auto;
         }
     </style>
 </head>
@@ -110,44 +47,57 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4 px-4 admin-header">
         <div>
-            <h2 class="fw-bold text-white">Gestión de Agendas</h2>
-            <p class="text-info">Bienvenido, <span id="nombreAdmin" class="fw-bold text-white"></span></p>
+            <h2 class="fw-bold">Gestión de Clínica</h2>
+            <p class="text-white">Panel de Administración</p>
         </div>
-        <button onclick="logout()" class="btn btn-outline-light">Cerrar Sesión</button>
+        <button onclick="logout()" class="btn btn-danger btn-sm">Cerrar Sesión</button>
     </div>
 
-    <div class="card mb-4 shadow-sm border-0" style="max-width: 600px; margin: 0 auto;">
-        <div class="card-body rounded">
-            <h5 class="card-title fw-bold mb-3">Planificar día</h5>
-            <form id="formGenerar" class="row g-3">
-                <div class="col-auto">
-                    <input type="date" id="fechaGenerar" class="form-control" required>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-success fw-bold d-flex align-items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-check" viewBox="0 0 16 16">
-                            <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
-                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                        </svg>
-                        Abrir Jornada
-                    </button>
+    <div id="alertaSeleccion" class="alert alert-success d-none mb-3 shadow-sm" style="max-width: 600px; margin: 0 auto;">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-person-check-fill"></i> Paciente: <strong id="nombreSeleccionado"></strong></span>
+            <button class="btn btn-sm btn-outline-success" onclick="cancelarSeleccion()">Cancelar</button>
+        </div>
+    </div>
 
+    <div class="card card-gestion shadow-sm p-3">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="fw-bold mb-1">Buscar Paciente:</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="busquedaPaciente" class="form-control" placeholder="Nombre o DNI..." onkeyup="buscarPacientes()">
                 </div>
-            </form>
-            <div id="mensajeFeedback" class="mt-2 small"></div>
+                <div id="resultadosBusqueda" class="list-group mt-2 position-absolute shadow" style="z-index: 1000; width: 45%;"></div>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-bold mb-1">Generar Jornada:</label>
+                <form id="formGenerar" class="input-group">
+                    <input type="date" id="fechaGenerar" class="form-control" required>
+                    <button type="submit" class="btn btn-success">Abrir Día</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <div id="calendar"></div>
 </div>
 
-<script>
-    if (!localStorage.getItem('userName')) {
-        window.location.href = "login.html";
-    }
-    document.getElementById('nombreAdmin').textContent = localStorage.getItem('userName');
+<div class="modal fade" id="modalHistorial" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Historial de <span id="nombrePacienteHistorial"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoHistorial"></div>
+        </div>
+    </div>
+</div>
 
+<script>
     let calendar;
+    let pacienteSeleccionadoParaCita = null;
 
     document.addEventListener('DOMContentLoaded', function() {
         const calendarEl = document.getElementById('calendar');
@@ -155,134 +105,104 @@
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'resourceTimeGridDay',
             locale: 'es',
-            height: 'auto',
-            contentHeight: 'auto',
-
-
-            slotLabelFormat: {
-                hour: 'numeric',
-                minute: '2-digit',
-                omitZeroMinute: false,
-                meridiem: 'short'
-            },
-
-
             slotMinTime: '09:00:00',
             slotMaxTime: '21:00:00',
             slotDuration: '00:40:00',
             allDaySlot: false,
-            displayEventTime: false,
-            expandRows: true,
-
-            headerToolbar: (window.innerWidth < 768) ? {
-                left: 'prev,next',
-                center: 'title',
-                right: ''
-            } : {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'resourceTimeGridDay,resourceTimeGridWeek'
-            },
             resources: [
-                { id: '1', title: 'Ánxela', eventBackgroundColor: '#E3F2FD' },
-                { id: '2', title: 'Lucía Garza', eventBackgroundColor: '#E8F5E9' }
+                { id: '1', title: 'Lucía Garza' },
+                { id: '2', title: 'Ánxela' }
             ],
-            events: '/api/citas/admin/todas',
+            events: 'http://localhost:8080/api/citas/admin/todas',
 
             eventDataTransform: function(eventData) {
-                if (!eventData.fechaHora) return null;
-                const fechaInicio = new Date(eventData.fechaHora);
                 const resId = eventData.fisioId ? eventData.fisioId.toString() : '1';
-
-                let textoMostrar = 'DISPONIBLE';
-                let colorFondo = (resId === '2') ? '#28a745' : '#007bff';
-
-                if (eventData.estado === 'CONFIRMADA') {
-                    const nombrePaciente = eventData.pacienteNombre || (eventData.paciente ? eventData.paciente.nombre : null);
-
-                    if (nombrePaciente) {
-                        textoMostrar = nombrePaciente.toUpperCase();
-                    } else if (eventData.notasClinicas && eventData.notasClinicas !== 'LIBRE INTERNO') {
-                        textoMostrar = eventData.notasClinicas.toUpperCase();
-                    } else {
-                        textoMostrar = 'RESERVADA';
-                    }
-
-                    colorFondo = '#444444';
-                }
-
-                const fechaFin = new Date(fechaInicio.getTime() + 40 * 60000);
+                let isConfirmed = (eventData.estado === 'CONFIRMADA' || eventData.estado === 'RESERVADO');
 
                 return {
                     id: eventData.id,
                     resourceId: resId,
-                    title: textoMostrar,
-                    start: fechaInicio.toISOString(),
-                    end: fechaFin.toISOString(),
-                    backgroundColor: colorFondo,
-                    borderColor: colorFondo,
-                    textColor: '#ffffff',
+                    title: isConfirmed ? (eventData.pacienteNombre || 'OCUPADO').toUpperCase() : 'LIBRE',
+                    start: eventData.fechaHora,
+                    end: new Date(new Date(eventData.fechaHora).getTime() + 40 * 60000).toISOString(),
+                    backgroundColor: isConfirmed ? '#444' : '#E8F5E9',
+                    textColor: isConfirmed ? '#fff' : '#2e7d32',
                     extendedProps: { estado: eventData.estado }
                 };
             },
 
-           eventClick: async function(info) {
-                const estadoActual = info.event.extendedProps.estado;
+            eventClick: async function(info) {
                 const citaId = info.event.id;
 
-                if (estadoActual === 'CONFIRMADA') {
-                    const respuesta = confirm(`Cita de ${info.event.title}\n\n¿Quieres ANULAR esta reserva?`);
-                    if (respuesta) {
-                        try {
-                            const response = await fetch(`/api/citas/reservar-manual/${citaId}?nombre=`, { method: 'PUT' });
-                            if (response.ok) {
-                                alert("Cita liberada.");
-                                calendar.refetchEvents();
-                            }
-                        } catch (error) { alert("Error al anular."); }
-                    }
-                    return;
-                }
 
-                const nombre = prompt("Nombre del paciente:");
-                if (nombre && nombre.trim() !== "") {
-                    try {
-                        const response = await fetch(`/api/citas/reservar-manual/${citaId}?nombre=${encodeURIComponent(nombre)}`, { method: 'PUT' });
-                        if (response.ok) {
-                            alert("¡Reservado!");
+                if (pacienteSeleccionadoParaCita) {
+                    if (confirm(`¿Asignar a ${pacienteSeleccionadoParaCita.nombre} a las ${info.event.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}?`)) {
+                        const resp = await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                pacienteId: pacienteSeleccionadoParaCita.id,
+                                notasClinicas: "Cita asignada por Admin"
+                            })
+                        });
+                        if (resp.ok) {
+                            cancelarSeleccion();
                             calendar.refetchEvents();
                         }
-                    } catch (error) { alert("Error al reservar."); }
+                    }
+                } else if (info.event.extendedProps.estado !== 'LIBRE') {
+
+                    if (confirm("¿Quieres liberar este hueco?")) {
+                        await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pacienteId: null })
+                        });
+                        calendar.refetchEvents();
+                    }
                 }
             }
         });
 
         calendar.render();
 
-        document.getElementById('formGenerar').addEventListener('submit', async function(e) {
+
+        document.getElementById('formGenerar').addEventListener('submit', async (e) => {
             e.preventDefault();
             const fecha = document.getElementById('fechaGenerar').value;
-            const feedback = document.getElementById('mensajeFeedback');
-
-            try {
-                const response = await fetch(`/api/citas/generar-jornada?fecha=${fecha}`, { method: 'POST' });
-                if (response.ok) {
-                    feedback.className = "mt-2 small text-success";
-                    feedback.textContent = "¡Éxito! Agenda creada.";
-                    calendar.refetchEvents();
-                } else {
-                    feedback.className = "mt-2 small text-danger";
-                    feedback.textContent = "Error. ¿Ya existe esa fecha?";
-                }
-            } catch (error) { feedback.textContent = "Error de conexión."; }
+            const resp = await fetch(`http://localhost:8080/api/citas/generar-jornada?fecha=${fecha}`, { method: 'POST' });
+            if (resp.ok) calendar.refetchEvents();
         });
     });
 
-    function logout() {
-        localStorage.clear();
-        window.location.href = "login.html";
+    async function buscarPacientes() {
+        const term = document.getElementById('busquedaPaciente').value;
+        const resDiv = document.getElementById('resultadosBusqueda');
+        if (term.length < 2) { resDiv.innerHTML = ''; return; }
+
+        const resp = await fetch(`http://localhost:8080/api/pacientes/buscar?term=${term}`);
+        const pacientes = await resp.json();
+
+        resDiv.innerHTML = pacientes.map(p => `
+            <button class="list-group-item list-group-item-action" onclick="seleccionarPaciente(${p.id}, '${p.nombre} ${p.apellidos}')">
+                ${p.nombre} ${p.apellidos} (${p.dni})
+            </button>
+        `).join('');
     }
+
+    function seleccionarPaciente(id, nombre) {
+        pacienteSeleccionadoParaCita = { id, nombre };
+        document.getElementById('nombreSeleccionado').innerText = nombre;
+        document.getElementById('alertaSeleccion').classList.remove('d-none');
+        document.getElementById('resultadosBusqueda').innerHTML = '';
+    }
+
+    function cancelarSeleccion() {
+        pacienteSeleccionadoParaCita = null;
+        document.getElementById('alertaSeleccion').classList.add('d-none');
+    }
+
+    function logout() { localStorage.clear(); window.location.href = "index.html"; }
 </script>
 </body>
 </html>
-

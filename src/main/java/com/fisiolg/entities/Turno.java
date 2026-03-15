@@ -6,87 +6,61 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "turnos")
 public class Turno {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "fecha_hora")
+    @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
 
-    private String motivo;
 
-    @Enumerated(EnumType.STRING)
-    private EstadoCita estado = EstadoCita.PENDIENTE;
+    @ManyToOne
+    @JoinColumn(name = "fisio_id", nullable = true)
+    private Fisio fisio;
 
     @ManyToOne
     @JoinColumn(name = "paciente_id")
     private Paciente paciente;
 
-    @ManyToOne
-    @JoinColumn(name = "fisio_id")
-    private Fisioterapeuta fisio;
+    @Enumerated(EnumType.STRING)
+    private EstadoCita estado = EstadoCita.LIBRE;
 
-    public Turno() {
-    }
+    @Column(columnDefinition = "TEXT")
+    private String motivo;
 
 
-    public Long getId() {
+    @OneToOne(mappedBy = "turno")
+    private Cita cita;
 
-        return id;
-    }
+    public Turno() {}
 
-    public void setId(Long id) {
 
-        this.id = id;
-    }
-
-    public LocalDateTime getFechaHora() {
-
-        return fechaHora;
-    }
-
-    public void setFechaHora(LocalDateTime fechaHora) {
-
+    public Turno(LocalDateTime fechaHora) {
         this.fechaHora = fechaHora;
+        this.estado = EstadoCita.LIBRE;
     }
 
-    public String getMotivo() {
 
-        return motivo;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setMotivo(String motivo) {
+    public LocalDateTime getFechaHora() { return fechaHora; }
+    public void setFechaHora(LocalDateTime fechaHora) { this.fechaHora = fechaHora; }
 
-        this.motivo = motivo;
-    }
+    public Fisio getFisio() { return fisio; }
+    public void setFisio(Fisio fisio) { this.fisio = fisio; }
 
-    public EstadoCita getEstado() {
+    public Paciente getPaciente() { return paciente; }
+    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
 
-        return estado;
-    }
+    public EstadoCita getEstado() { return estado; }
+    public void setEstado(EstadoCita estado) { this.estado = estado; }
 
-    public void setEstado(EstadoCita estado) {
+    public String getMotivo() { return motivo; }
+    public void setMotivo(String motivo) { this.motivo = motivo; }
 
-        this.estado = estado;
-    }
-
-    public Paciente getPaciente() {
-
-        return paciente;
-    }
-
-    public void setPaciente(Paciente paciente) {
-
-        this.paciente = paciente;
-    }
-
-    public Fisioterapeuta getFisio() {
-
-        return fisio;
-    }
-
-    public void setFisio(Fisioterapeuta fisio) {
-
-        this.fisio = fisio;
-    }
+    public Cita getCita() { return cita; }
+    public void setCita(Cita cita) { this.cita = cita; }
 }
+
