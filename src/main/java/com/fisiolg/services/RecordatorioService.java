@@ -20,34 +20,43 @@ public class RecordatorioService {
 
 
     @Scheduled(cron = "0 0 9 * * *")
-    public void avisarCitasMañana() {
+    public void avisarCitasManana() {
 
-        LocalDateTime mañanaI = LocalDateTime.now().plusDays(1).withHour(0).withMinute(0).withSecond(0);
-        LocalDateTime mañanaF = LocalDateTime.now().plusDays(1).withHour(23).withMinute(59).withSecond(59);
+        System.out.println("⏰ [09:00 AM] Iniciando envío automático de recordatorios...");
+
+        LocalDateTime mananaI = LocalDateTime.now().plusDays(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime mananaF = LocalDateTime.now().plusDays(1).withHour(23).withMinute(59).withSecond(59);
 
 
-        List<Cita> proximas = citaRepository.findByFechaHoraBetween(mañanaI, mañanaF);
+        List<Cita> proximas = citaRepository.findByFechaHoraBetweenAndRecordatorioEnviadoFalse(mananaI, mananaF);
 
         for (Cita c : proximas) {
 
-            if (c.getPaciente() != null &&
-                    (c.getEstado() == EstadoCita.CONFIRMADA || c.getEstado() == EstadoCita.CONFIRMADA)) {
+
+            if (c.getPaciente() != null && c.getEstado() == EstadoCita.CONFIRMADA) {
+
 
                 String email = c.getPaciente().getEmail();
                 String nombre = c.getPaciente().getNombre();
                 String hora = c.getFechaHora().toLocalTime().toString();
 
-                emailService.enviarCorreo(
-                        email,
-                        "Recordatorio de Cita - FisioLG",
-                        "Hola " + nombre + ", te recordamos que tienes una cita programada para mañana a las " + hora + ". " +
-                                "\n\nSi no puedes asistir, por favor avísanos con antelación. ¡Gracias!"
-                );
+
+                if (email != null && !email.isEmpty()) {
+                    emailService.enviarCorreo(
+                            email,
+                            "Recordatorio de Cita - FisioLG",
+                            "Hola " + nombre + ", te recordamos que tienes una cita programada para mañana a las " + hora + ". " +
+                                    "\n\nSi no puedes asistir, por favor avísanos con antelación. ¡Gracias!"
+                    );
 
 
-                c.setRecordatorioEnviado(true);
-                citaRepository.save(c);
+                    c.setRecordatorioEnviado(true);
+                    citaRepository.save(c);
+
+                    System.out.println("✅ Recordatorio enviado con éxito a: " + email);
+                }
             }
         }
+        System.out.println("✅ Proceso de recordatorios finalizado.");
     }
 }

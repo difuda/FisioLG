@@ -31,7 +31,6 @@
         .hero-section { padding: 20px 0 30px; text-align: center; }
         .hero-section h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; }
 
-
         .slider-wrapper { width: 100%; max-width: 1100px; margin: 0 auto; overflow: hidden; position: relative; }
         .carrusel-contenedor { display: flex; gap: 25px; padding: 20px 0; transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
         .card-realismo { flex: 0 0 350px; height: 400px; border-radius: 25px; overflow: hidden; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: none; background: #fff; transition: transform 0.4s ease; cursor: pointer; }
@@ -41,7 +40,6 @@
 
         .card-noticias-admin { background-color: var(--verde-corp) !important; color: white; display: flex; flex-direction: column; justify-content: center; padding: 40px; text-align: center; }
         .card-noticias-admin i { font-size: 3.5rem; margin-bottom: 20px; }
-
 
         .registro-container { background: white; border-radius: 30px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); }
         .btn-primary { background-color: var(--verde-corp) !important; border: none; padding: 15px; font-weight: 700; border-radius: 12px; }
@@ -85,7 +83,7 @@
         <div class="card-realismo card-noticias-admin shadow-lg">
             <i class="bi bi-megaphone-fill"></i>
             <h3>Noticias</h3>
-            <p class="noticia-texto">"Centro cerrado del 10 al 15 de abril por formación. ¡Gracias!"</p>
+            <p class="noticia-texto" id="textoNoticiaPortada">Cargando aviso...</p>
         </div>
         <div class="card-realismo">
             <img src="img/tratamiento1.png" alt="Tratamientos">
@@ -115,7 +113,7 @@
                             <div class="form-check p-3 bg-light rounded-3">
                                 <input class="form-check-input ms-0 me-2" type="checkbox" id="checkRGPD">
                                 <label class="form-check-label small" for="checkRGPD">
-                                    Acepto la <a href="#" class="text-verde" data-bs-toggle="modal" data-bs-target="#modal1">Política de Privacidad</a>
+                                    He leído y acepto la <a href="#" class="text-verde" data-bs-toggle="modal" data-bs-target="#modalPrivacidad">Política de Privacidad</a> y la <a href="#" class="text-verde" data-bs-toggle="modal" data-bs-target="#modalProteccion">Protección de Datos</a>
                                 </label>
                             </div>
                         </div>
@@ -151,29 +149,139 @@
     <div class="footer-bottom"><p>&copy; 2026 FisioLG - Todos los derechos reservados.</p></div>
 </footer>
 
+<div class="modal fade" id="modalPrivacidad" tabindex="-1" aria-labelledby="modalPrivacidadLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalPrivacidadLabel">Política de Privacidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-start" style="font-size: 0.9rem;">
+                <p class="text-center"><strong>INFORMACIÓN SOBRE EL TRATAMIENTO DE DATOS DE SALUD</strong></p>
+                <p><strong>LUCIA GARZA VAZQUEZ</strong> le informa que para la prestación del servicio solicitado será necesario el tratamiento de datos personales especialmente protegidos (establecidos en el Art. 9.1 del RGPD 2016/679). La entidad se compromete a cumplir y adoptar las medidas de seguridad necesarias para garantizar la seguridad, integridad y confidencialidad de los datos a los que tenga acceso, obligándose al secreto profesional respecto de los mismos, subsistiendo dicha obligación aún después de finalizada la relación contractual.</p>
+                <p><em>* Cuando la persona interesada es menor de 14 años y la legislación vigente lo requiere, la marcación de la casilla de aceptación implica el consentimiento expreso del representante legal o tutor/a.</em></p>
+
+                <h6 class="fw-bold mt-4">Información básica sobre Protección de datos</h6>
+                <table class="table table-bordered mt-2">
+                    <tbody>
+                    <tr>
+                        <th scope="row" class="w-25 bg-light">Responsable del tratamiento</th>
+                        <td>LUCIA GARZA VAZQUEZ, NIF: 44470286Q, TLF: 644476621, EMAIL: fisioterapialuciagarza@gmail.com</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Finalidades del tratamiento</th>
+                        <td>Prestación de servicios solicitados. Historial clínico.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Legitimaciones del tratamiento</th>
+                        <td>Ejecución de un contrato. Cumplimiento de obligación legal.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Destinatarios de los datos</th>
+                        <td>No se facilitarán datos a terceros, salvo obligación legal.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Ejercicio de derechos</th>
+                        <td>Para ejercer sus derechos de acceso, rectificación, oposición, limitación, portabilidad y supresión de sus datos, así como retirar su consentimiento, podrán dirigirse al responsable o presentar una reclamación ante la Agencia Española de Protección de Datos.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Información adicional</th>
+                        <td>Puede obtener información adicional dirigiéndose a los datos de contacto del responsable anteriormente indicados.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalProteccion" tabindex="-1" aria-labelledby="modalProteccionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalProteccionLabel">Protección de Datos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-start" style="font-size: 0.9rem;">
+                <p class="text-center"><strong>INFORMACIÓN SOBRE EL TRATAMIENTO DE DATOS DE SALUD</strong></p>
+                <p><strong>LUCIA GARZA VAZQUEZ</strong> le informa que para la prestación del servicio solicitado será necesario el tratamiento de datos personales especialmente protegidos (establecidos en el Art. 9.1 del RGPD 2016/679). La entidad se compromete a cumplir y adoptar las medidas de seguridad necesarias para garantizar la seguridad, integridad y confidencialidad de los datos a los que tenga acceso, obligándose al secreto profesional respecto de los mismos, subsistiendo dicha obligación aún después de finalizada la relación contractual.</p>
+                <p><em>* Cuando la persona interesada es menor de 14 años y la legislación vigente lo requiere, la marcación de la casilla de aceptación implica el consentimiento expreso del representante legal o tutor/a.</em></p>
+
+                <h6 class="fw-bold mt-4">Información básica sobre Protección de datos</h6>
+                <table class="table table-bordered mt-2">
+                    <tbody>
+                    <tr>
+                        <th scope="row" class="w-25 bg-light">Responsable del tratamiento</th>
+                        <td>LUCIA GARZA VAZQUEZ, NIF: 44470286Q, TLF: 644476621, EMAIL: fisioterapialuciagarza@gmail.com</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Finalidades del tratamiento</th>
+                        <td>Prestación de servicios solicitados. Historial clínico.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Legitimaciones del tratamiento</th>
+                        <td>Ejecución de un contrato. Cumplimiento de obligación legal.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Destinatarios de los datos</th>
+                        <td>No se facilitarán datos a terceros, salvo obligación legal.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Ejercicio de derechos</th>
+                        <td>Para ejercer sus derechos de acceso, rectificación, oposición, limitación, portabilidad y supresión de sus datos, así como retirar su consentimiento, podrán dirigirse al responsable o presentar una reclamación ante la Agencia Española de Protección de Datos.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="bg-light">Información adicional</th>
+                        <td>Puede obtener información adicional dirigiéndose a los datos de contacto del responsable anteriormente indicados.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('http://localhost:8080/api/noticias/actual')
+            .then(response => response.json())
+            .then(data => {
+                const elemento = document.getElementById('textoNoticiaPortada');
+                if(elemento && data.texto) {
+                    elemento.innerText = data.texto;
+                }
+            })
+            .catch(error => console.log("Error cargando noticias:", error));
+    });
 
     const carrusel = document.getElementById('carrusel');
-    const tarjetas = document.querySelectorAll('.card-realismo');
-    let index = 0;
-    setInterval(() => {
-        index++;
-        carrusel.style.transition = "transform 0.8s ease-in-out";
-        carrusel.style.transform = `translateX(-${index * (350 + 25)}px)`;
-        if (index >= tarjetas.length) {
-            setTimeout(() => { carrusel.style.transition = "none"; index = 0; carrusel.style.transform = `translateX(0)`; }, 800);
-        }
-    }, 4000);
+    const desplazamiento = 375;
 
+    setInterval(() => {
+        carrusel.style.transition = "transform 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95)";
+        carrusel.style.transform = `translateX(-${desplazamiento}px)`;
+
+        setTimeout(() => {
+            carrusel.style.transition = "none";
+            carrusel.appendChild(carrusel.firstElementChild);
+            carrusel.style.transform = `translateX(0)`;
+        }, 800);
+    }, 4000);
 
     async function solicitarCodigo() {
         const email = document.getElementById('email').value;
         const btn = document.getElementById('btnSolicitar');
 
         if (!email || !document.getElementById('checkRGPD').checked) {
-            alert("Completa el email y acepta la política de privacidad.");
+            alert("Completa el email y acepta la política de privacidad y protección de datos.");
             return;
         }
 
@@ -181,7 +289,6 @@
         btn.innerText = "Enviando...";
 
         try {
-
             const response = await fetch(`/api/auth/send-otp?email=${encodeURIComponent(email)}`, { method: 'POST' });
 
             if (response.ok) {
@@ -204,11 +311,9 @@
         const codigo = document.getElementById('codigoIntroducido').value;
         const btnVerificar = document.getElementById('btnVerificar');
 
-
         const respAuth = await fetch(`/api/auth/verify-otp?email=${email}&code=${codigo}`, { method: 'POST' });
 
         if (respAuth.ok) {
-            // 2. Si el código es ok, registramos al paciente antes de ir al calendario
             const datosPaciente = {
                 nombre: document.getElementById('nombre').value,
                 apellidos: document.getElementById('apellidos').value,

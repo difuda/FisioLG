@@ -3,11 +3,14 @@ package com.fisiolg.controllers;
 import com.fisiolg.entities.Cita;
 import com.fisiolg.entities.EstadoCita;
 import com.fisiolg.entities.Paciente;
+import com.fisiolg.entities.Servicio;
 import com.fisiolg.entities.User;
 import com.fisiolg.repositories.CitaRepository;
 import com.fisiolg.repositories.PacienteRepository;
+import com.fisiolg.repositories.ServicioRepository;
 import com.fisiolg.repositories.UserRepository;
 import com.fisiolg.services.AgendaService;
+import com.fisiolg.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,8 @@ public class CitaController {
     @Autowired private AgendaService agendaService;
     @Autowired private PacienteRepository pacienteRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private ServicioRepository servicioRepository;
+    @Autowired private EmailService emailService;
 
 
     @GetMapping("/admin/todas")
@@ -39,7 +44,6 @@ public class CitaController {
             e.put("id", c.getId());
             e.put("fisioId", c.getFisio() != null ? c.getFisio().getId() : null);
             e.put("estado", c.getEstado());
-
 
             String nombreFinal = (c.getPaciente() != null)
                     ? c.getPaciente().getNombre() + " " + c.getPaciente().getApellidos()
@@ -57,7 +61,6 @@ public class CitaController {
     @GetMapping("/disponibles")
     public List<Map<String, Object>> getCitasDisponibles() {
         List<Cita> libres = citaRepository.findByEstado(EstadoCita.LIBRE);
-
 
         Map<LocalDateTime, Cita> huecosUnicos = new HashMap<>();
         for (Cita c : libres) {
@@ -88,7 +91,6 @@ public class CitaController {
                     cita.setNotas(datos.get("notasClinicas").toString());
                 }
             } else {
-
                 cita.setPaciente(null);
                 cita.setEstado(EstadoCita.LIBRE);
                 cita.setNotas(null);
@@ -117,7 +119,6 @@ public class CitaController {
             usuario.setEmail(datos.get("email"));
             usuario.setPassword(datos.get("password"));
             usuario.setRol("PACIENTE");
-            usuario.setPaciente(paciente);
             userRepository.save(usuario);
         }
 
@@ -140,5 +141,83 @@ public class CitaController {
     @GetMapping("/paciente/{id}")
     public List<Cita> getPorPaciente(@PathVariable Long id) {
         return citaRepository.findByPacienteIdOrderByFechaHoraDesc(id);
+    }
+
+
+    @PostMapping("/reservar-manual")
+    @Transactional
+    public ResponseEntity<?> reservarCitaManual(
+            @RequestParam(required = false) Long pacienteId,
+            @RequestParam(required = false) String nombreNuevo,
+            @RequestParam(required = false) String apellidosNuevo,
+            @RequestParam(required = false) String telefonoNuevo,
+            @RequestParam(required = false) String emailNuevo,
+            @RequestParam Long citaId,
+            @RequestParam Long servicioId) {
+
+        Cita cita = citaRepository.findById(citaId).orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+        Servicio servicio = servicioRepository.findById(servicioId).orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+        Paciente pacienteAsignado;
+        String emailDestino = "";
+
+        if (pacienteId != null) {
+
+            pacienteAsignado = pacienteRepository.findById(pacienteId).orElseThrow();
+            emailDestino = pacienteAsignado.getEmail();
+        } else {
+
+            pacienteAsignado = new Paciente();
+            pacienteAsignado.setNombre(nombreNuevo);
+            pacienteAsignado.setApellidos(apellidosNuevo);
+            pacienteAsignado.setTelefono(telefonoNuevo);
+
+            if (emailNuevo != null && !emailNuevo.trim().isEmpty()) {
+                pacienteAsignado.setEmail(emailNuevo);
+                emailDestino = emailNuevo;
+            }
+
+
+            pacienteRepository.save(pacienteAsignado);
+        }
+
+
+        cita.setPaciente(pacienteAsignado);
+        cita.setServicio(servicio);
+        cita.setEstado(EstadoCita.CONFIRMADA);
+
+        citaRepository.save(cita);
+
+
+        if (emailDestino != null && !emailDestino.isEmpty()) {
+            String fechaStr = cita.getFechaHora().toLocalDate().toString();
+            String horaStr = cita.getFechaHora().toLocalTime().toString();
+
+            emailService.enviarCorreo(
+                    emailDestino,
+                    "Confirmación de Reserva - FisioLG",
+                    "Hola " + pacienteAsignado.getNombre() + ",\n\nTu cita ha sido reservada para el día "
+                            + fechaStr + " a las " + horaStr + " para tu sesión de " + servicio.getNombre() + ".\n\n¡Te esperamos en la clínica!"
+            );
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Cita reservada con éxito"));
+    }
+
+
+    @PostMapping("/bloquear-manual")
+    @Transactional
+    public ResponseEntity<?> bloquearCitaManual(@RequestParam Long citaId) {
+
+        Cita cita = citaRepository.findById(citaId).orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+
+
+        cita.setEstado(EstadoCita.ANULADA);
+        cita.setPaciente(null);
+        cita.setServicio(null);
+
+        citaRepository.save(cita);
+
+        return ResponseEntity.ok(Map.of("message", "Hueco bloqueado correctamente."));
     }
 }
