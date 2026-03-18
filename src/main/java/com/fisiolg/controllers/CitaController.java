@@ -50,6 +50,7 @@ public class CitaController {
                     : "DISPONIBLE";
 
             e.put("pacienteNombre", nombreFinal);
+            e.put("pacienteId", c.getPaciente() != null ? c.getPaciente().getId() : null);
             e.put("fechaHora", c.getFechaHora() != null ? c.getFechaHora().toString() : null);
             e.put("notas", c.getNotas());
             eventos.add(e);
@@ -150,6 +151,7 @@ public class CitaController {
             @RequestParam(required = false) Long pacienteId,
             @RequestParam(required = false) String nombreNuevo,
             @RequestParam(required = false) String apellidosNuevo,
+            @RequestParam(required = false) String dniNuevo,
             @RequestParam(required = false) String telefonoNuevo,
             @RequestParam(required = false) String emailNuevo,
             @RequestParam Long citaId,
@@ -170,6 +172,7 @@ public class CitaController {
             pacienteAsignado = new Paciente();
             pacienteAsignado.setNombre(nombreNuevo);
             pacienteAsignado.setApellidos(apellidosNuevo);
+            pacienteAsignado.setDni(dniNuevo);
             pacienteAsignado.setTelefono(telefonoNuevo);
 
             if (emailNuevo != null && !emailNuevo.trim().isEmpty()) {
@@ -219,5 +222,21 @@ public class CitaController {
         citaRepository.save(cita);
 
         return ResponseEntity.ok(Map.of("message", "Hueco bloqueado correctamente."));
+    }
+
+    @GetMapping("/admin/estadisticas")
+    public ResponseEntity<Map<String, Long>> getEstadisticasAdmin() {
+        long total = citaRepository.count();
+        long libres = citaRepository.countByEstado(EstadoCita.LIBRE);
+        long confirmadas = citaRepository.countByEstado(EstadoCita.CONFIRMADA);
+        long anuladas = citaRepository.countByEstado(EstadoCita.ANULADA);
+
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("total", total);
+        stats.put("libres", libres);
+        stats.put("confirmadas", confirmadas);
+        stats.put("anuladas", anuladas);
+
+        return ResponseEntity.ok(stats);
     }
 }

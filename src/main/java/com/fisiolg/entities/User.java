@@ -2,6 +2,7 @@ package com.fisiolg.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "usuarios")
@@ -14,6 +15,7 @@ public class User {
     @Column(unique = true, nullable = false, length = 150)
     private String username;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -23,9 +25,11 @@ public class User {
     @Column(nullable = false, length = 50)
     private String rol;
 
+    @JsonIgnore
     @Column(name = "otp_code", length = 6)
     private String otpCode;
 
+    @JsonIgnore
     @Column(name = "token_recuperacion")
     private String tokenRecuperacion;
 
@@ -34,10 +38,11 @@ public class User {
     @Column(name = "fecha_registro", updatable = false)
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
-
+    @JsonIgnore
     @OneToOne(mappedBy = "usuario")
     private Paciente paciente;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "usuario")
     private Fisio fisio;
 
@@ -50,7 +55,6 @@ public class User {
         this.rol = rol;
         this.activo = true;
     }
-
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

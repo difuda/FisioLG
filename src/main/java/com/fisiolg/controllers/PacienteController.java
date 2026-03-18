@@ -34,7 +34,7 @@ public class PacienteController {
 
     @GetMapping("/buscar")
     public ResponseEntity<List<Paciente>> buscarPacientes(@RequestParam String term) {
-        // Asegúrate de que tu PacienteRepository tenga este método exacto
+
         List<Paciente> resultados = pacienteRepository.findByNombreContainingIgnoreCaseOrDniContainingIgnoreCase(term, term);
         return ResponseEntity.ok(resultados);
     }

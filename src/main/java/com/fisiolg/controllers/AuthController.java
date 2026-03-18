@@ -57,7 +57,7 @@ public class AuthController {
 
             if (user.getTokenRecuperacion() != null && user.getTokenRecuperacion().equals(code)) {
 
-                user.setTokenRecuperacion(null); // Limpiamos el código tras usarlo
+                user.setTokenRecuperacion(null);
                 userRepository.save(user);
 
                 return ResponseEntity.ok(Map.of(

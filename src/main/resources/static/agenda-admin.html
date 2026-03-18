@@ -3,42 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Gestión - Clínica FisioLG</title>
+    <title>Gestión FisioLG</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@6.1.10/index.global.min.js"></script>
     <style>
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-                        url("img/fondocalendario.png");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("img/fondocalendario.png");
+            background-size: cover; background-position: center; background-attachment: fixed;
+            min-height: 100vh; margin: 0; padding: 20px; font-family: 'Segoe UI', sans-serif;
         }
-
-        #calendar {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-
+        #calendar { max-width: 1100px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         .fc-license-message { display: none !important; }
-
         .admin-header h2 { color: white; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
+        .card-gestion { background: rgba(255, 255, 255, 0.9); border-radius: 15px; border: none; max-width: 1100px; margin: 0 auto 20px auto; }
 
-        .card-gestion {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            border: none;
-            max-width: 1100px;
-            margin: 0 auto 20px auto;
+        @media (max-width: 768px) {
+            .admin-header { flex-direction: column; text-align: center; gap: 15px; }
+            #calendar { padding: 10px; font-size: 0.8rem; }
+            .fc-header-toolbar { flex-direction: column; gap: 10px; }
+            .fc-toolbar-title { font-size: 1.2rem !important; }
+        }
+
+        #modalConfirmAdmin {
+            z-index: 9999 !important;
+        }
+        .modal-backdrop:nth-of-type(even) {
+            z-index: 9998 !important;
         }
     </style>
 </head>
@@ -53,7 +44,16 @@
         <button onclick="logout()" class="btn btn-danger btn-sm">Cerrar Sesión</button>
     </div>
 
-    <div id="alertaSeleccion" class="alert alert-success d-none mb-3 shadow-sm" style="max-width: 600px; margin: 0 auto;">
+    <div id="alertaGlobal" class="alert d-none shadow-sm mx-auto mb-3" style="max-width: 1100px; border-radius: 12px;"></div>
+
+    <div class="row g-3 mb-4 px-4" id="panelEstadisticas">
+        <div class="col-md-3 col-6"><div class="card text-white bg-primary shadow-sm h-100 border-0" style="border-radius: 15px;"><div class="card-body text-center"><h6 class="text-uppercase mb-1" style="font-size: 0.8rem;">Total</h6><h2 class="fw-bold mb-0" id="statTotal">-</h2></div></div></div>
+        <div class="col-md-3 col-6"><div class="card text-white bg-success shadow-sm h-100 border-0" style="border-radius: 15px;"><div class="card-body text-center"><h6 class="text-uppercase mb-1" style="font-size: 0.8rem;">Libres</h6><h2 class="fw-bold mb-0" id="statLibres">-</h2></div></div></div>
+        <div class="col-md-3 col-6"><div class="card bg-warning text-dark shadow-sm h-100 border-0" style="border-radius: 15px;"><div class="card-body text-center"><h6 class="text-uppercase mb-1" style="font-size: 0.8rem;">Confirmadas</h6><h2 class="fw-bold mb-0" id="statConfirmadas">-</h2></div></div></div>
+        <div class="col-md-3 col-6"><div class="card text-white bg-danger shadow-sm h-100 border-0" style="border-radius: 15px;"><div class="card-body text-center"><h6 class="text-uppercase mb-1" style="font-size: 0.8rem;">Anuladas</h6><h2 class="fw-bold mb-0" id="statAnuladas">-</h2></div></div></div>
+    </div>
+
+    <div id="alertaSeleccion" class="alert alert-success d-none mb-3 shadow-sm mx-auto" style="max-width: 600px;">
         <div class="d-flex justify-content-between align-items-center">
             <span><i class="bi bi-person-check-fill"></i> Paciente: <strong id="nombreSeleccionado"></strong></span>
             <button class="btn btn-sm btn-outline-success" onclick="cancelarSeleccion()">Cancelar</button>
@@ -63,7 +63,7 @@
     <div class="card card-gestion shadow-sm p-3">
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="fw-bold mb-1">Buscar Paciente (Para asignar cita):</label>
+                <label class="fw-bold mb-1">Buscar Paciente:</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" id="busquedaPaciente" class="form-control" placeholder="Nombre o DNI..." onkeyup="buscarPacientes()">
@@ -83,11 +83,27 @@
     <div id="calendar"></div>
 </div>
 
+<div class="modal fade" id="modalConfirmAdmin" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content text-center" style="border-radius: 20px;">
+            <div class="modal-body p-4">
+                <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+                <h5 class="fw-bold mt-2">¿Estás seguro?</h5>
+                <p id="textoConfirmAdmin" class="text-muted small"></p>
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button class="btn btn-light px-4" data-bs-dismiss="modal">No</button>
+                    <button id="btnConfirmarAccion" class="btn btn-danger px-4">Sí, proceder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalHistorial" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Historial de <span id="nombrePacienteHistorial"></span></h5>
+                <h5 class="modal-title">Detalles de <span id="nombrePacienteHistorial" class="fw-bold"></span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="contenidoHistorial"></div>
@@ -95,38 +111,29 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalGestionCita" tabindex="-1" aria-labelledby="modalGestionCitaLabel" aria-hidden="true">
+<div class="modal fade" id="modalGestionCita" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modalGestionCitaLabel">Gestión de Hueco Libre</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Gestión de Hueco Libre</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-
                 <input type="hidden" id="citaIdSeleccionada">
+                <div class="alert alert-info"><strong>Hueco:</strong> <span id="textoFechaHora"></span></div>
+                <h6 class="text-primary mt-3 border-bottom pb-2">Reserva Manual</h6>
 
-                <div class="alert alert-info">
-                    <strong>Hueco seleccionado:</strong> <span id="textoFechaHora"></span>
-                </div>
-
-                <h6 class="text-primary mt-3 border-bottom pb-2">Opción A: Reservar por Teléfono (Invitado)</h6>
                 <form id="formReservaManual">
                     <div class="row g-2 mb-2">
-                        <div class="col-md-6">
-                            <input type="text" id="resNombre" class="form-control" placeholder="Nombre" required>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" id="resApellidos" class="form-control" placeholder="Apellidos" required>
-                        </div>
+                        <div class="col-6"><input type="text" id="resNombre" class="form-control" placeholder="Nombre" required></div>
+                        <div class="col-6"><input type="text" id="resApellidos" class="form-control" placeholder="Apellidos" required></div>
                     </div>
                     <div class="row g-2 mb-2">
-                        <div class="col-md-6">
-                            <input type="tel" id="resTelefono" class="form-control" placeholder="Teléfono" required>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="email" id="resEmail" class="form-control" placeholder="Email (Opcional)">
-                        </div>
+                        <div class="col-6"><input type="text" id="resDni" class="form-control" placeholder="DNI / NIE" required></div>
+                        <div class="col-6"><input type="tel" id="resTelefono" class="form-control" placeholder="Teléfono" required></div>
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" id="resEmail" class="form-control" placeholder="Email (Opcional)">
                     </div>
                     <div class="mb-3">
                         <select id="resServicio" class="form-select" required>
@@ -136,165 +143,130 @@
                     <button type="button" class="btn btn-success w-100" onclick="enviarReservaManual()">📅 Confirmar Reserva</button>
                 </form>
 
-                <h6 class="text-danger mt-4 border-bottom pb-2">Opción B: Urgencias / Cierre</h6>
-                <p class="text-muted small mb-2">Usa esta opción si el profesional no puede asistir y necesitas que este hueco desaparezca de la web de clientes.</p>
+                <h6 class="text-danger mt-4 border-bottom pb-2">Urgencias / Cierre</h6>
                 <button type="button" class="btn btn-outline-danger w-100" onclick="bloquearHueco()">🔒 Bloquear / Anular Hueco</button>
-
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-    let calendar;
-    let pacienteSeleccionadoParaCita = null;
+    let calendar, modalConfirm, accionConfirmar, pacienteSeleccionadoParaCita = null;
+
+    function mostrarAlerta(msg, tipo) {
+        const a = document.getElementById('alertaGlobal');
+        a.innerText = msg; a.className = `alert alert-${tipo} mb-3 shadow-sm mx-auto`;
+        a.classList.remove('d-none'); setTimeout(() => a.classList.add('d-none'), 4000);
+    }
+
+    function pedirConfirmacion(texto, callback) {
+        document.getElementById('textoConfirmAdmin').innerText = texto;
+        accionConfirmar = callback;
+        modalConfirm.show();
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
+        modalConfirm = new bootstrap.Modal(document.getElementById('modalConfirmAdmin'));
+        document.getElementById('btnConfirmarAccion').onclick = () => { accionConfirmar(); modalConfirm.hide(); };
 
+        fetch('http://localhost:8080/api/servicios').then(res => res.json()).then(data => {
+            const s = document.getElementById('resServicio'); s.innerHTML = '<option value="">Selecciona servicio...</option>';
+            data.forEach(x => s.innerHTML += `<option value="${x.id}">${x.nombre} - ${x.precio}€</option>`);
+        }).catch(() => console.log("Servicios no disponibles"));
 
-        fetch('http://localhost:8080/api/servicios')
-            .then(res => res.json())
-            .then(data => {
-                const select = document.getElementById('resServicio');
-                select.innerHTML = '<option value="">Selecciona un tratamiento...</option>';
-                data.forEach(s => {
-                    select.innerHTML += `<option value="${s.id}">${s.nombre} - ${s.precio}€</option>`;
-                });
-            })
-            .catch(e => console.error("Error cargando servicios:", e));
-
-
-        const calendarEl = document.getElementById('calendar');
-
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'resourceTimeGridDay',
-            locale: 'es',
-            slotMinTime: '09:00:00',
-            slotMaxTime: '21:00:00',
-            slotDuration: '00:40:00',
-            allDaySlot: false,
-            resources: [
-                { id: '1', title: 'Lucía Garza' },
-                { id: '2', title: 'Ánxela' }
-            ],
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            initialView: 'resourceTimeGridDay', locale: 'es', slotMinTime: '09:00:00', slotMaxTime: '21:00:00', slotDuration: '00:40:00',
+            allDaySlot: false, resources: [{ id: '1', title: 'Lucía Garza' }, { id: '2', title: 'Ánxela' }],
             events: 'http://localhost:8080/api/citas/admin/todas',
-
-            eventDataTransform: function(eventData) {
-                const resId = eventData.fisioId ? eventData.fisioId.toString() : '1';
-                let isConfirmed = (eventData.estado === 'CONFIRMADA' || eventData.estado === 'RESERVADO');
-
-                return {
-                    id: eventData.id,
-                    resourceId: resId,
-                    title: isConfirmed ? (eventData.pacienteNombre || 'OCUPADO').toUpperCase() : (eventData.estado === 'ANULADA' ? 'BLOQUEADO' : 'LIBRE'),
-                    start: eventData.fechaHora,
-                    end: new Date(new Date(eventData.fechaHora).getTime() + 40 * 60000).toISOString(),
-                    backgroundColor: isConfirmed ? '#444' : (eventData.estado === 'ANULADA' ? '#dc3545' : '#E8F5E9'),
-                    textColor: isConfirmed ? '#fff' : (eventData.estado === 'ANULADA' ? '#fff' : '#2e7d32'),
-                    extendedProps: { estado: eventData.estado }
-                };
-            },
-
-            eventClick: async function(info) {
-                const citaId = info.event.id;
-                const estado = info.event.extendedProps.estado;
-
-
+            eventDataTransform: (e) => ({
+                id: e.id, resourceId: e.fisioId ? e.fisioId.toString() : '1',
+                title: (e.estado === 'CONFIRMADA' || e.estado === 'RESERVADO') ? (e.pacienteNombre || 'OCUPADO').toUpperCase() : (e.estado === 'ANULADA' ? 'BLOQUEADO' : 'LIBRE'),
+                start: e.fechaHora, end: new Date(new Date(e.fechaHora).getTime() + 40 * 60000).toISOString(),
+                backgroundColor: (e.estado === 'CONFIRMADA' || e.estado === 'RESERVADO') ? '#444' : (e.estado === 'ANULADA' ? '#dc3545' : '#E8F5E9'),
+                textColor: (e.estado === 'CONFIRMADA' || e.estado === 'RESERVADO') || e.estado === 'ANULADA' ? '#fff' : '#2e7d32',
+                extendedProps: { estado: e.estado, pacienteId: e.pacienteId }
+            }),
+            eventClick: async (info) => {
+                const id = info.event.id; const est = info.event.extendedProps.estado;
                 if (pacienteSeleccionadoParaCita) {
-                    if (confirm(`¿Asignar a ${pacienteSeleccionadoParaCita.nombre} a las ${info.event.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}?`)) {
-                        const resp = await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                pacienteId: pacienteSeleccionadoParaCita.id,
-                                notasClinicas: "Cita asignada por Admin"
-                            })
-                        });
-                        if (resp.ok) {
-                            cancelarSeleccion();
-                            calendar.refetchEvents();
-                        }
-                    }
-                }
-
-                else if (estado === 'LIBRE') {
-                    document.getElementById('citaIdSeleccionada').value = citaId;
-
-                    let fechaBonita = info.event.start.toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' });
-                    document.getElementById('textoFechaHora').innerText = fechaBonita;
-
-                    let modal = new bootstrap.Modal(document.getElementById('modalGestionCita'));
-                    modal.show();
-                }
-
-                else {
-                    if (confirm("¿Quieres liberar este hueco y dejarlo disponible otra vez?")) {
-                        await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ pacienteId: null })
-                        });
-                        calendar.refetchEvents();
-                    }
+                    pedirConfirmacion(`¿Asignar a ${pacienteSeleccionadoParaCita.nombre} a las ${info.event.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}?`, async () => {
+                        try {
+                            const r = await fetch(`http://localhost:8080/api/citas/actualizar/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pacienteId: pacienteSeleccionadoParaCita.id, notasClinicas: "Cita asignada por Admin" }) });
+                            if (r.ok) { cancelarSeleccion(); calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Paciente asignado con éxito", "success"); }
+                        } catch(e) { mostrarAlerta("Error al conectar", "danger"); }
+                    });
+                } else if (est === 'LIBRE') {
+                    document.getElementById('citaIdSeleccionada').value = id;
+                    document.getElementById('textoFechaHora').innerText = info.event.start.toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' });
+                    new bootstrap.Modal(document.getElementById('modalGestionCita')).show();
+                } else if (est === 'CONFIRMADA' || est === 'RESERVADO') {
+                    const currentFisioId = info.event.getResources()[0].id;
+                    abrirHistorialYGestion(id, info.event.extendedProps.pacienteId, info.event.title, currentFisioId);
+                } else if (est === 'ANULADA') {
+                    pedirConfirmacion("¿Quieres liberar este hueco bloqueado?", async () => {
+                        await fetch(`http://localhost:8080/api/citas/actualizar/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pacienteId: null }) });
+                        calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Hueco liberado", "success");
+                    });
                 }
             }
         });
+        calendar.render(); cargarEstadisticas();
 
-        calendar.render();
-
-        document.getElementById('formGenerar').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fecha = document.getElementById('fechaGenerar').value;
-            const resp = await fetch(`http://localhost:8080/api/citas/generar-jornada?fecha=${fecha}`, { method: 'POST' });
-            if (resp.ok) calendar.refetchEvents();
-        });
+        document.getElementById('formGenerar').onsubmit = async (e) => {
+            e.preventDefault(); const f = document.getElementById('fechaGenerar').value;
+            try {
+                const r = await fetch(`http://localhost:8080/api/citas/generar-jornada?fecha=${f}`, { method: 'POST' });
+                if (r.ok) { calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Jornada generada correctamente", "success"); }
+            } catch(err) { mostrarAlerta("Error al conectar con servidor", "danger"); }
+        };
     });
 
+    async function cargarEstadisticas() {
+        try {
+            const r = await fetch('http://localhost:8080/api/citas/admin/estadisticas');
+            if (r.ok) {
+                const s = await r.json();
+                document.getElementById('statTotal').innerText = s.total || 0; document.getElementById('statLibres').innerText = s.libres || 0;
+                document.getElementById('statConfirmadas').innerText = s.confirmadas || 0; document.getElementById('statAnuladas').innerText = s.anuladas || 0;
+            }
+        } catch(e) { console.log("Estadísticas offline"); }
+    }
 
     async function buscarPacientes() {
-        const term = document.getElementById('busquedaPaciente').value;
-        const resDiv = document.getElementById('resultadosBusqueda');
-        if (term.length < 2) { resDiv.innerHTML = ''; return; }
-
-        const resp = await fetch(`http://localhost:8080/api/pacientes/buscar?term=${term}`);
-        const pacientes = await resp.json();
-
-        resDiv.innerHTML = pacientes.map(p => `
-            <button class="list-group-item list-group-item-action" onclick="seleccionarPaciente(${p.id}, '${p.nombre} ${p.apellidos}')">
-                ${p.nombre} ${p.apellidos} (${p.dni})
-            </button>
-        `).join('');
+        const t = document.getElementById('busquedaPaciente').value; const div = document.getElementById('resultadosBusqueda');
+        if (t.length < 2) { div.innerHTML = ''; return; }
+        try {
+            const r = await fetch(`http://localhost:8080/api/pacientes/buscar?term=${t}`);
+            const ps = await r.json();
+            div.innerHTML = ps.map(p => `<button class="list-group-item list-group-item-action" onclick="seleccionarPaciente(${p.id}, '${p.nombre} ${p.apellidos}')">${p.nombre} ${p.apellidos} (${p.dni})</button>`).join('');
+        } catch(e) { div.innerHTML = '<div class="list-group-item text-danger">Error de búsqueda</div>'; }
     }
 
-    function seleccionarPaciente(id, nombre) {
-        pacienteSeleccionadoParaCita = { id, nombre };
-        document.getElementById('nombreSeleccionado').innerText = nombre;
-        document.getElementById('alertaSeleccion').classList.remove('d-none');
-        document.getElementById('resultadosBusqueda').innerHTML = '';
+    function seleccionarPaciente(id, n) {
+        pacienteSeleccionadoParaCita = { id, nombre: n }; document.getElementById('nombreSeleccionado').innerText = n;
+        document.getElementById('alertaSeleccion').classList.remove('d-none'); document.getElementById('resultadosBusqueda').innerHTML = '';
     }
 
-    function cancelarSeleccion() {
-        pacienteSeleccionadoParaCita = null;
-        document.getElementById('alertaSeleccion').classList.add('d-none');
-    }
+    function cancelarSeleccion() { pacienteSeleccionadoParaCita = null; document.getElementById('alertaSeleccion').classList.add('d-none'); }
 
 
     function enviarReservaManual() {
-        const citaId = document.getElementById('citaIdSeleccionada').value;
-        const servicioId = document.getElementById('resServicio').value;
+        const id = document.getElementById('citaIdSeleccionada').value;
+        const sId = document.getElementById('resServicio').value;
+        const dniInput = document.getElementById('resDni').value.trim().toUpperCase();
 
-        if(!document.getElementById('resNombre').value || !document.getElementById('resTelefono').value || !servicioId) {
-            alert("Por favor, rellena al menos Nombre, Teléfono y Servicio.");
+        if(!document.getElementById('resNombre').value || !document.getElementById('resTelefono').value || !dniInput || !sId) {
+            mostrarAlerta("Rellena Nombre, DNI, Teléfono y Servicio", "warning");
             return;
         }
 
-        const params = new URLSearchParams({
-            citaId: citaId,
-            servicioId: servicioId,
+        const p = new URLSearchParams({
+            citaId: id,
+            servicioId: sId,
             nombreNuevo: document.getElementById('resNombre').value,
             apellidosNuevo: document.getElementById('resApellidos').value,
+            dniNuevo: dniInput,
             telefonoNuevo: document.getElementById('resTelefono').value,
             emailNuevo: document.getElementById('resEmail').value
         });
@@ -302,41 +274,138 @@
         fetch('http://localhost:8080/api/citas/reservar-manual', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        })
-        .then(response => {
-            if(response.ok) {
-                alert("✅ Cita reservada correctamente");
+            body: p
+        }).then(r => {
+            if(r.ok) {
                 bootstrap.Modal.getInstance(document.getElementById('modalGestionCita')).hide();
-                // Limpiar el formulario
                 document.getElementById('formReservaManual').reset();
                 calendar.refetchEvents();
+                cargarEstadisticas();
+                mostrarAlerta("Cita reservada con éxito", "success");
             } else {
-                alert("Error al reservar la cita.");
+                mostrarAlerta("Error al guardar la cita en el servidor.", "danger");
+            }
+        }).catch(e => mostrarAlerta("Error de conexión al servidor.", "danger"));
+    }
+
+    function bloquearHueco() {
+        pedirConfirmacion("¿Bloquear este hueco? Desaparecerá de la web de clientes.", () => {
+            const id = document.getElementById('citaIdSeleccionada').value;
+            fetch('http://localhost:8080/api/citas/bloquear-manual', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ citaId: id }) }).then(r => {
+                if(r.ok) { bootstrap.Modal.getInstance(document.getElementById('modalGestionCita')).hide(); calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Hueco bloqueado", "danger"); }
+            });
+        });
+    }
+
+    async function abrirHistorialYGestion(citaId, pId, nP, fisioIdActual) {
+        document.getElementById('nombrePacienteHistorial').innerText = nP;
+        const cont = document.getElementById('contenidoHistorial');
+        cont.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success"></div></div>';
+        new bootstrap.Modal(document.getElementById('modalHistorial')).show();
+
+        try {
+            let html = '';
+            if (!pId) {
+                html += '<div class="alert alert-warning">Sin ficha de paciente vinculada.</div>';
+            } else {
+                const r = await fetch(`http://localhost:8080/api/citas/paciente/${pId}`);
+                if (r.ok) {
+                    const cs = await r.json();
+                    if (cs.length === 0) {
+                        html += '<p>Sin historial previo.</p>';
+                    } else {
+                        html += '<table class="table table-sm mt-3"><thead class="table-dark"><tr><th>Fecha</th><th>Estado</th><th>Notas</th></tr></thead><tbody>';
+                        cs.forEach(c => {
+                            const f = new Date(c.fechaHora);
+                            html += `<tr><td>${f.toLocaleDateString()}</td><td><span class="badge ${c.estado === 'CONFIRMADA' ? 'bg-success' : 'bg-secondary'}">${c.estado}</span></td><td class="small">${c.notas || '-'}</td></tr>`;
+                        });
+                        html += '</tbody></table>';
+                    }
+                } else {
+                    html += '<div class="alert alert-danger">Error al obtener historial del servidor.</div>';
+                }
+            }
+
+            html += `<hr><h6 class="fw-bold text-primary mt-3">Gestión de la cita seleccionada</h6>`;
+            html += `<div class="p-3 bg-light border rounded mb-3">
+                        <label class="fw-bold small text-muted mb-2">Reasignar a otro profesional:</label>
+                        <div class="input-group input-group-sm">
+                            <select id="selectReasignar" class="form-select">
+                                <option value="1" ${fisioIdActual === '1' ? 'selected' : ''}>Lucía Garza</option>
+                                <option value="2" ${fisioIdActual === '2' ? 'selected' : ''}>Ánxela</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="reasignarProfesional(${citaId})">Mover Cita</button>
+                        </div>
+                     </div>`;
+
+            html += `<button class="btn btn-outline-danger w-100" onclick="liberarCitaDesdeHistorial(${citaId})">Anular y Liberar Cita Actual</button>`;
+            cont.innerHTML = html;
+
+        } catch (error) {
+            cont.innerHTML = '<div class="alert alert-danger">Error al cargar los datos. El servidor no responde o no se encuentra la ruta.</div>';
+        }
+    }
+
+    function reasignarProfesional(citaIdActual) {
+        const nuevoFisioId = document.getElementById('selectReasignar').value;
+        const eventoActual = calendar.getEventById(citaIdActual);
+
+        if (eventoActual.getResources()[0].id === nuevoFisioId) {
+            mostrarAlerta("La cita ya pertenece a este profesional.", "warning");
+            return;
+        }
+
+        const pacienteId = eventoActual.extendedProps.pacienteId;
+        const horaInicio = eventoActual.start;
+
+        const todosLosEventos = calendar.getEvents();
+        const huecoDestino = todosLosEventos.find(e =>
+            e.getResources()[0].id === nuevoFisioId &&
+            e.start.getTime() === horaInicio.getTime()
+        );
+
+        if (!huecoDestino) {
+            mostrarAlerta("La otra agenda no tiene jornada abierta a esta hora.", "warning");
+            return;
+        }
+        if (huecoDestino.extendedProps.estado !== 'LIBRE') {
+            mostrarAlerta("El otro profesional ya está ocupado o bloqueado a esta hora.", "danger");
+            return;
+        }
+
+        pedirConfirmacion("¿Confirmas que quieres mover al paciente de agenda?", async () => {
+            try {
+                const r1 = await fetch(`http://localhost:8080/api/citas/actualizar/${huecoDestino.id}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pacienteId: pacienteId, notasClinicas: "Movido de agenda por Admin" })
+                });
+
+                const r2 = await fetch(`http://localhost:8080/api/citas/actualizar/${citaIdActual}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pacienteId: null })
+                });
+
+                if (r1.ok && r2.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalHistorial')).hide();
+                    calendar.refetchEvents();
+                    mostrarAlerta("Paciente reasignado correctamente", "success");
+                } else {
+                    mostrarAlerta("Hubo un problema sincronizando las agendas.", "danger");
+                }
+            } catch(e) {
+                mostrarAlerta("Error de conexión al servidor.", "danger");
             }
         });
     }
 
-    function bloquearHueco() {
-        if(confirm("¿Estás seguro de que quieres bloquear este hueco? Aparecerá en rojo para ti y desaparecerá de la web de clientes.")) {
-            const citaId = document.getElementById('citaIdSeleccionada').value;
-            const params = new URLSearchParams({ citaId: citaId });
-
-            fetch('http://localhost:8080/api/citas/bloquear-manual', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params
-            })
-            .then(response => {
-                if(response.ok) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalGestionCita')).hide();
-                    calendar.refetchEvents();
-                }
-            });
-        }
+    function liberarCitaDesdeHistorial(id) {
+        pedirConfirmacion("¿Anular y liberar esta cita?", async () => {
+            await fetch(`http://localhost:8080/api/citas/actualizar/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pacienteId: null }) });
+            bootstrap.Modal.getInstance(document.getElementById('modalHistorial')).hide(); calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Cita anulada", "info");
+        });
     }
 
-    function logout() { localStorage.clear(); window.location.href = "index.html"; }
+    function logout() { localStorage.clear(); window.location.href = "login.html"; }
 </script>
 </body>
 </html>
