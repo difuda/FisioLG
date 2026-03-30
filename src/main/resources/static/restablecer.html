@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restablecer Contraseña - FisioLG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --verde: #88c057; --azul: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f2; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .reset-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); width: 100%; max-width: 450px; text-align: center; }
+        .logo-img { max-width: 150px; margin-bottom: 20px; }
+        .form-control { border-radius: 10px; padding: 12px; margin-bottom: 15px; background: #f9fbfc; border: 1px solid #e0e0e0; }
+        .btn-reset { background: var(--verde); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; transition: 0.3s; }
+        .btn-reset:hover { background: #6fa343; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="reset-card">
+    <img src="img/locoblanco.png" alt="Logo FisioLG" class="logo-img" style="filter: brightness(0) invert(0);">
+    <h3 class="fw-bold mb-3" style="color: var(--azul);">Nueva Contraseña</h3>
+    <p class="text-muted small mb-4">Introduce tu nueva contraseña para acceder a tu cuenta.</p>
+
+    <div id="alertaReset" class="alert d-none small py-2"></div>
+
+    <form id="formReset">
+        <input type="password" id="nuevaPass" class="form-control" placeholder="Nueva contraseña (mínimo 6 caracteres)" required minlength="6">
+        <input type="password" id="repetirPass" class="form-control" placeholder="Repite la contraseña" required minlength="6">
+        <button type="submit" id="btnGuardar" class="btn-reset mt-2">GUARDAR CONTRASEÑA</button>
+    </form>
+
+    <div class="mt-4 text-center">
+        <a href="index.html" class="small text-muted" style="text-decoration: underline;">Volver al inicio</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('formReset').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        const pass1 = document.getElementById('nuevaPass').value;
+        const pass2 = document.getElementById('repetirPass').value;
+        const alerta = document.getElementById('alertaReset');
+        const btn = document.getElementById('btnGuardar');
+
+        alerta.classList.add('d-none');
+
+        if (!token) {
+            alerta.innerText = "Enlace de recuperación inválido o caducado.";
+            alerta.className = "alert alert-danger d-block small py-2";
+            return;
+        }
+
+        if (pass1 !== pass2) {
+            alerta.innerText = "Las contraseñas no coinciden.";
+            alerta.className = "alert alert-warning d-block small py-2";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "GUARDANDO...";
+
+        try {
+
+            const resp = await fetch('http://localhost:8080/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token, nuevaPassword: pass1 })
+            });
+
+            if (resp.ok) {
+                alerta.innerText = "Contraseña actualizada correctamente. Redirigiendo...";
+                alerta.className = "alert alert-success d-block small py-2";
+                setTimeout(() => { window.location.href = "index.html"; }, 2500);
+            } else {
+                alerta.innerText = "El enlace ha caducado. Vuelve a solicitarlo.";
+                alerta.className = "alert alert-danger d-block small py-2";
+                btn.disabled = false;
+                btn.innerText = "GUARDAR CONTRASEÑA";
+            }
+        } catch (error) {
+            alerta.innerText = "Error de conexión con el servidor.";
+            alerta.className = "alert alert-danger d-block small py-2";
+            btn.disabled = false;
+            btn.innerText = "GUARDAR CONTRASEÑA";
+        }
+    });
+</script>
+
+</body>
+</html>

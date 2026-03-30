@@ -28,7 +28,7 @@ public class RecordatorioService {
         LocalDateTime mananaF = LocalDateTime.now().plusDays(1).withHour(23).withMinute(59).withSecond(59);
 
 
-        List<Cita> proximas = citaRepository.findByFechaHoraBetweenAndRecordatorioEnviadoFalse(mananaI, mananaF);
+        List<Cita> proximas = citaRepository.findByEstadoAndRecordatorioEnviadoFalseAndFechaHoraBetween(EstadoCita.CONFIRMADA, mananaI, mananaF);
 
         for (Cita c : proximas) {
 

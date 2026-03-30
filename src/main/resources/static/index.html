@@ -60,7 +60,9 @@
             .registro-container { padding: 25px 15px; }
             .carrusel-contenedor { padding: 20px calc((100vw - 250px) / 2); }
             .card-realismo { flex: 0 0 85vw; height: 320px; }
-            .carrusel-contenedor { gap: 15px; }
+            .carrusel-contenedor {
+                gap: 15vw;
+                padding: 20px 7.5vw;}
         }
     </style>
 </head>
@@ -163,8 +165,8 @@
 <footer class="main-footer">
     <div class="footer-content">
         <div class="footer-section">
-            <h3>FisioLG</h3>
-            <p>Clínica Lucía Garza.<br>Tu salud en buenas manos.</p>
+            <h3>Fisioterapia Lucía Garza</h3>
+            <p>Fisioterapia y osteopatía.<br>Tu salud en buenas manos.</p>
         </div>
         <div class="footer-section">
             <h4>Contacto</h4>
@@ -298,9 +300,37 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="border-radius: 10px;">INICIAR SESIÓN</button>
                 </form>
+                <div class="text-center mt-3">
+                    <a href="#" class="small text-muted" data-bs-toggle="modal" data-bs-target="#modalRecuperarPass" style="text-decoration: underline;">¿Has olvidado tu contraseña?</a>
+                </div>
                 <div id="loginError" class="alert alert-danger mt-3 d-none small text-center py-2">
                     Credenciales incorrectas.
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalRecuperarPass" tabindex="-1" aria-labelledby="modalRecuperarPassLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modalRecuperarPassLabel" style="color: var(--verde-corp);">Recuperar Contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <i class="bi bi-shield-lock text-muted mb-3" style="font-size: 3rem;"></i>
+                <p class="small text-muted mb-4">Introduce tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.</p>
+
+                <form id="formRecuperarPass">
+                    <div class="mb-4 text-start">
+                        <label class="form-label small fw-bold">Correo Electrónico</label>
+                        <input type="email" id="recuperarEmail" class="form-control" placeholder="tu@email.com" required>
+                    </div>
+                    <button type="submit" id="btnEnviarRecuperacion" class="btn btn-dark w-100 py-2 fw-bold" style="border-radius: 10px;">ENVIAR ENLACE</button>
+                </form>
+
+                <div id="alertaRecuperacion" class="alert d-none mt-3 small py-2"></div>
             </div>
         </div>
     </div>
@@ -416,7 +446,7 @@
                 sessionStorage.setItem('userTelefono', document.getElementById('telefono').value.trim());
                 sessionStorage.setItem('userDni', document.getElementById('dni').value.trim());
 
-                // Redirigimos al calendario directamente
+
                 window.location.href = "calendario.html";
 
             } else {
@@ -441,9 +471,18 @@
             });
 
             if (resp.ok) {
-                localStorage.setItem('pacienteEmail', email);
-                sessionStorage.setItem('userEmail', email);
-                window.location.href = "calendario.html";
+                const data = await resp.json();
+                console.log("Datos que llegan del servidor:", data);
+                localStorage.setItem('pacienteEmail', data.email);
+                sessionStorage.setItem('userEmail', data.email);
+
+
+                if(data.nombre && data.nombre !== "Paciente") {
+                    sessionStorage.setItem('userNombre', data.nombre);
+                }
+
+                window.location.href = "panel-paciente.html";
+
             } else {
                 errorDiv.classList.remove('d-none');
                 setTimeout(() => errorDiv.classList.add('d-none'), 3000);
@@ -451,6 +490,40 @@
         } catch (error) {
             console.error("Error en login:", error);
             mostrarAlertaIndex("Error de conexión al intentar iniciar sesión.", "danger");
+        }
+    });
+
+
+    document.getElementById('formRecuperarPass').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('recuperarEmail').value.trim();
+        const btn = document.getElementById('btnEnviarRecuperacion');
+        const alerta = document.getElementById('alertaRecuperacion');
+
+        btn.disabled = true;
+        btn.innerText = "ENVIANDO...";
+        alerta.classList.add('d-none');
+
+        try {
+
+            const resp = await fetch(`http://localhost:8080/api/auth/olvidar-password?email=${encodeURIComponent(email)}`, {
+                method: 'POST'
+            });
+
+            if (resp.ok) {
+                alerta.innerText = "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.";
+                alerta.className = "alert alert-success mt-3 small py-2 d-block";
+                document.getElementById('recuperarEmail').value = ''; // Limpiamos el campo
+            } else {
+                alerta.innerText = "No se ha podido procesar la solicitud.";
+                alerta.className = "alert alert-danger mt-3 small py-2 d-block";
+            }
+        } catch (error) {
+            alerta.innerText = "Error de conexión con el servidor.";
+            alerta.className = "alert alert-danger mt-3 small py-2 d-block";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "ENVIAR ENLACE";
         }
     });
 

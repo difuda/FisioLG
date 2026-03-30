@@ -25,5 +25,9 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
 
     boolean existsByFechaHoraAndFisioId(LocalDateTime fechaHora, Long fisioId);
 
-    List<Cita> findByFechaHoraBetweenAndRecordatorioEnviadoFalse(LocalDateTime inicio, LocalDateTime fin);
+
+    List<Cita> findByEstadoAndRecordatorioEnviadoFalseAndFechaHoraBetween(EstadoCita estado, LocalDateTime inicio, LocalDateTime fin);
+
+
+
 }

@@ -24,7 +24,6 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
         .form-control { border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #f9fbfc; border: 1px solid #eee; }
-        /* Estilo para el campo de email ya validado */
         .form-control:read-only { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
         .btn-main {
             background: var(--verde); color: white; border: none;
@@ -38,12 +37,20 @@
 
 <div class="main-content">
     <div class="card-reserva">
-        <h2 class="text-center fw-bold mb-2" style="color: var(--azul)">Finalizar Reserva</h2>
-        <p class="text-muted text-center mb-4 small">Completa tus datos para confirmar la cita.</p>
+        <h2 id="tituloPrincipal" class="text-center fw-bold mb-4" style="color: var(--azul)">¿Cómo quieres continuar?</h2>
+
+        <div id="eleccionInicial" class="d-grid gap-3">
+            <button class="btn btn-outline-dark py-3 fw-bold" onclick="mostrarFormulario('invitado')">
+                RESERVAR COMO INVITADO
+            </button>
+            <button class="btn btn-primary py-3 fw-bold" onclick="mostrarFormulario('miembro')" style="background-color: var(--verde); border:none;">
+                QUIERO SER MIEMBRO (Y GESTIONAR MIS CITAS)
+            </button>
+        </div>
 
         <div id="alertaReserva" class="alert d-none" role="alert" style="border-radius: 12px; font-size: 14px;"></div>
 
-        <form id="formFinal">
+        <form id="formFinal" class="d-none">
             <div class="row g-2">
                 <div class="col-6"><input type="text" id="nom" class="form-control" placeholder="Nombre" required></div>
                 <div class="col-6"><input type="text" id="ape" class="form-control" placeholder="Apellidos" required></div>
@@ -55,12 +62,18 @@
             <input type="text" id="dni" class="form-control" placeholder="DNI (12345678Z)" required>
             <input type="tel" id="tel" class="form-control" placeholder="Teléfono móvil" required>
 
+            <div id="campoPassword" class="d-none">
+                <label class="small fw-bold text-success ms-1">Crea una contraseña para tu cuenta:</label>
+                <input type="password" id="pass" class="form-control" placeholder="Mínimo 6 caracteres">
+            </div>
+
             <div class="form-check mb-3 mt-2">
                 <input class="form-check-input" type="checkbox" id="rgpd" required>
                 <label class="form-check-label small text-muted" for="rgpd">Acepto la política de protección de datos.</label>
             </div>
 
             <button type="submit" id="btnConfirmar" class="btn-main shadow-sm">CONFIRMAR MI CITA</button>
+            <button type="button" class="btn btn-link btn-sm w-100 mt-2 text-muted" onclick="location.reload()">Volver atrás</button>
         </form>
     </div>
 </div>
@@ -87,18 +100,34 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-
+    let modoRegistro = 'invitado';
     const citaId = new URLSearchParams(window.location.search).get('citaId') || sessionStorage.getItem('citaIdReserva');
-    const emailValidado = sessionStorage.getItem('userEmail'); // Asegúrate de que en el index guardas el email con este nombre
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if (emailValidado) {
-            document.getElementById('email').value = emailValidado;
+
+    function mostrarFormulario(modo) {
+        modoRegistro = modo;
+        document.getElementById('eleccionInicial').classList.add('d-none');
+        document.getElementById('formFinal').classList.remove('d-none');
+
+        const titulo = document.getElementById('tituloPrincipal');
+
+        if(modo === 'miembro') {
+            titulo.innerText = "Registro de Miembro";
+            document.getElementById('campoPassword').classList.remove('d-none');
+            document.getElementById('pass').required = true;
         } else {
-            // Si por algún error no hay email, le dejamos escribirlo pero avisamos
-            document.getElementById('email').readOnly = false;
+            titulo.innerText = "Datos de Invitado";
+            document.getElementById('campoPassword').classList.add('d-none');
+            document.getElementById('pass').required = false;
         }
-    });
+
+
+        document.getElementById('nom').value = sessionStorage.getItem('userNombre') || '';
+        document.getElementById('ape').value = sessionStorage.getItem('userApellidos') || '';
+        document.getElementById('email').value = sessionStorage.getItem('userEmail') || '';
+        document.getElementById('dni').value = sessionStorage.getItem('userDni') || '';
+        document.getElementById('tel').value = sessionStorage.getItem('userTelefono') || '';
+    }
 
     function mostrarAlerta(msg, tipo) {
         const a = document.getElementById('alertaReserva');
@@ -110,12 +139,9 @@
         e.preventDefault();
 
         const dniReg = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i;
-        const telReg = /^[0-9]{9,12}$/;
         const dniInput = document.getElementById('dni').value.trim().toUpperCase();
-        const telInput = document.getElementById('tel').value.trim();
 
         if (!dniReg.test(dniInput)) { mostrarAlerta("DNI no válido (8 números y letra).", "danger"); return; }
-        if (!telReg.test(telInput)) { mostrarAlerta("Teléfono no válido.", "danger"); return; }
         if (!citaId) { mostrarAlerta("Error: No se ha detectado la cita seleccionada.", "danger"); return; }
 
         const btn = document.getElementById('btnConfirmar');
@@ -126,10 +152,15 @@
             apellidos: document.getElementById('ape').value.trim().toUpperCase(),
             dni: dniInput,
             email: document.getElementById('email').value,
-            telefono: telInput
+            telefono: document.getElementById('tel').value.trim()
         };
 
+        if(modoRegistro === 'miembro') {
+            pac.password = document.getElementById('pass').value;
+        }
+
         try {
+
             const resP = await fetch('http://localhost:8080/api/pacientes/registro', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -137,6 +168,7 @@
             });
             const pData = await resP.json();
 
+            // 2. Vincular cita con el ID del paciente obtenido
             await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},

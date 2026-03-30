@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área Privada - FisioLG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root { --verde: #88c057; --azul: #2c3e50; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: transparent;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('img/fondologin3.jpg');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.6;
+            z-index: -1;
+        }
+        .navbar-custom { background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 15px 0; }
+        .main-container { background: rgba(255, 255, 255, 0.9); border-radius: 25px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 20px; margin-bottom: 40px; }
+        .btn-nueva-cita { background: var(--verde); color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; transition: 0.3s; text-decoration: none; display: inline-block; }
+        .btn-nueva-cita:hover { background: #6fa343; transform: translateY(-2px); color: white; }
+        .card-cita { background: white; border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 5px solid var(--verde); transition: 0.3s; }
+        .card-cita:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-custom mb-4">
+    <div class="container d-flex justify-content-between align-items-center">
+        <h4 class="m-0 fw-bold" style="color: var(--azul);">Mi Área Privada</h4>
+        <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm rounded-pill px-3">Cerrar Sesión</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="main-container">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-8 text-center text-md-start">
+                <h2 class="fw-bold">Hola, <span id="nombreUsuario" style="color: var(--verde);">Paciente</span> 👋</h2>
+                <p class="text-muted">Gestiona tus citas actuales o reserva un nuevo hueco con nosotras.</p>
+            </div>
+            <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                <a href="calendario.html" class="btn btn-nueva-cita shadow-sm"><i class="bi bi-calendar-plus"></i> Reservar Nueva Cita</a>
+            </div>
+        </div>
+
+        <div id="alertaPanel" class="alert d-none" role="alert" style="border-radius: 12px;"></div>
+
+        <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-card-list"></i> Mis Citas Próximas</h5>
+        <div id="listaCitas" class="row">
+            <div class="text-center text-muted py-5" id="loadingCitas">
+                <div class="spinner-border text-success mb-2" role="status"></div>
+                <br>Buscando tus citas...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    const userEmail = sessionStorage.getItem('userEmail');
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        if (!userEmail) {
+            window.location.href = "index.html";
+            return;
+        }
+
+
+        const nombreGuardado = sessionStorage.getItem('userNombre');
+        if (nombreGuardado && nombreGuardado !== "undefined") {
+            document.getElementById('nombreUsuario').innerText = nombreGuardado;
+        }
+
+        cargarMisCitas();
+    });
+
+    async function cargarMisCitas() {
+        const contenedor = document.getElementById('listaCitas');
+        try {
+            const res = await fetch(`http://localhost:8080/api/citas/admin/todas`);
+            const todas = await res.json();
+
+
+            const misCitas = todas.filter(c => c.pacienteId !== null && c.pacienteEmail === userEmail);
+
+
+            if (misCitas.length > 0 && misCitas[0].pacienteNombre) {
+                // Sacamos el nombre de la cita (Base de datos)
+                const nombreBruto = misCitas[0].pacienteNombre.split(' ')[0];
+                const nombreFormateado = nombreBruto.charAt(0).toUpperCase() + nombreBruto.slice(1).toLowerCase();
+
+
+                document.getElementById('nombreUsuario').innerText = nombreFormateado;
+                sessionStorage.setItem('userNombre', nombreFormateado);
+            }
+            else if (misCitas.length === 0) {
+                // Si no hay citas y en el login falló el guardado, ponemos Bienvenido
+                const nombreSesion = sessionStorage.getItem('userNombre');
+                if (!nombreSesion || nombreSesion === "Paciente") {
+                    document.getElementById('nombreUsuario').innerText = "Bienvenido/a";
+                }
+            }
+
+
+            if (misCitas.length === 0) {
+                contenedor.innerHTML = `<div class="col-12 text-center py-4"><p class="text-muted">No tienes citas próximas. ¡Anímate a reservar!</p></div>`;
+                return;
+            }
+
+            let html = '';
+            misCitas.forEach(cita => {
+                const fechaObj = new Date(cita.fechaHora);
+                const fechaLegible = fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+                const horaLegible = fechaObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+                html += `
+                <div class="col-md-6">
+                    <div class="card card-cita p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1" style="text-transform: capitalize;">${fechaLegible}</h6>
+                                <p class="mb-0 text-muted small"><i class="bi bi-clock"></i> ${horaLegible} h</p>
+                                <span class="badge bg-success-subtle text-success mt-2">${cita.estado}</span>
+                            </div>
+                            <button onclick="cancelarCita(${cita.id})" class="btn btn-sm btn-outline-danger border-0" title="Cancelar Cita">
+                                <i class="bi bi-trash"></i> Anular
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            contenedor.innerHTML = html;
+
+        } catch (error) {
+            console.error("Error cargando citas:", error);
+            contenedor.innerHTML = `<div class="col-12 text-center py-4"><p class="text-danger">Error al conectar con el servidor.</p></div>`;
+        }
+    }
+
+    async function cancelarCita(citaId) {
+        if(confirm("¿Estás seguro de que deseas cancelar esta cita?")) {
+            try {
+
+                const r = await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pacienteId: null })
+                });
+
+                if(r.ok) {
+                    const alerta = document.getElementById('alertaPanel');
+                    alerta.innerText = "Cita anulada correctamente.";
+                    alerta.className = "alert alert-success mb-3 d-block";
+                    setTimeout(() => alerta.className = "alert d-none", 3000);
+                    cargarMisCitas();
+                }
+            } catch (e) {
+                alert("Error al intentar cancelar la cita.");
+            }
+        }
+    }
+
+    function cerrarSesion() {
+        sessionStorage.clear();
+        window.location.href = "index.html";
+    }
+</script>
+</body>
+</html>

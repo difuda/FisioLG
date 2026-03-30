@@ -55,10 +55,10 @@ public class PacienteController {
         String token = pacienteService.generarTokenRecuperacion(email);
 
         if (token != null) {
-            // URL de tu frontend para recuperar pass
+
             String enlace = "http://localhost:8080/restablecer-password.html?token=" + token;
 
-            emailService.enviarCorreo(email, "Recuperar Contraseña - FisioLG",
+            emailService.enviarCorreo(email, "Recuperar Contraseña - Fisioterapia y Osteopatía Lucía Garza",
                     "Hola. Has solicitado restablecer tu contraseña. Haz clic aquí: " + enlace);
 
             return ResponseEntity.ok(Map.of("message", "Email enviado con éxito"));

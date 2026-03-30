@@ -46,6 +46,21 @@
 
     <div id="alertaGlobal" class="alert d-none shadow-sm mx-auto mb-3" style="max-width: 1100px; border-radius: 12px;"></div>
 
+    <div class="d-flex justify-content-between align-items-center mb-2 px-4" style="max-width: 1100px; margin: 0 auto;">
+        <h6 class="text-white mb-0" style="text-shadow: 1px 1px 4px rgba(0,0,0,0.8);">Resumen de Actividad</h6>
+        <div class="d-flex gap-2 shadow-sm bg-white p-1 rounded align-items-center">
+            <input type="radio" class="btn-check" name="btnfiltro" id="fltHoy" onclick="cambiarFiltro('hoy')">
+            <label class="btn btn-outline-primary btn-sm fw-bold border-0 mb-0" for="fltHoy">Hoy</label>
+
+            <input type="month" id="inputMes" class="form-control form-control-sm border-0 bg-light fw-bold text-primary" onchange="cambiarFiltro('mes')" title="Filtrar por mes">
+
+            <input type="number" id="inputAnio" class="form-control form-control-sm border-0 bg-light fw-bold text-primary" style="width: 80px;" placeholder="Año" onchange="cambiarFiltro('anio')" title="Filtrar por año">
+
+            <input type="radio" class="btn-check" name="btnfiltro" id="fltTotal" onclick="cambiarFiltro('total')" checked>
+            <label class="btn btn-outline-primary btn-sm fw-bold border-0 mb-0" for="fltTotal">Total</label>
+        </div>
+    </div>
+
     <div class="row g-3 mb-4 px-4" id="panelEstadisticas">
         <div class="col-md-3 col-6"><div class="card text-white bg-primary shadow-sm h-100 border-0" style="border-radius: 15px;"><div class="card-body text-center"><h6 class="text-uppercase mb-1" style="font-size: 0.8rem;">Total</h6><h2 class="fw-bold mb-0" id="statTotal">-</h2></div></div></div>
         <div class="col-md-3 col-6"><div class="card text-white bg-success shadow-sm h-100 border-0" style="border-radius: 15px;"><div class="card-body text-center"><h6 class="text-uppercase mb-1" style="font-size: 0.8rem;">Libres</h6><h2 class="fw-bold mb-0" id="statLibres">-</h2></div></div></div>
@@ -74,12 +89,18 @@
                 <label class="fw-bold mb-1">Generar Jornada:</label>
                 <form id="formGenerar" class="input-group">
                     <input type="date" id="fechaGenerar" class="form-control" required>
-                    <button type="submit" class="btn btn-success">Abrir Día</button>
+                    <button type="submit" class="btn btn-success">Crear Agenda</button>
                 </form>
             </div>
         </div>
     </div>
 
+    <div class="d-flex justify-content-end align-items-center mb-2" style="max-width: 1100px; margin: 0 auto;">
+        <div class="d-flex align-items-center gap-2 bg-white p-1 rounded shadow-sm">
+            <label for="fechaNavegador" class="fw-bold text-muted mb-0 ms-2 small"><i class="bi bi-calendar-event"></i> Ir a fecha:</label>
+            <input type="date" id="fechaNavegador" class="form-control form-control-sm border-0 fw-bold text-primary" style="width: 130px; background-color: #f8f9fa;">
+        </div>
+    </div>
     <div id="calendar"></div>
 </div>
 
@@ -176,9 +197,17 @@
         }).catch(() => console.log("Servicios no disponibles"));
 
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            height: 'auto',
             initialView: 'resourceTimeGridDay', locale: 'es', slotMinTime: '09:00:00', slotMaxTime: '21:00:00', slotDuration: '00:40:00',
             allDaySlot: false, resources: [{ id: '1', title: 'Lucía Garza' }, { id: '2', title: 'Ánxela' }],
             events: 'http://localhost:8080/api/citas/admin/todas',
+
+
+            datesSet: function(info) {
+                const fechaActual = info.startStr.split('T')[0];
+                document.getElementById('fechaNavegador').value = fechaActual;
+            },
+
             eventDataTransform: (e) => ({
                 id: e.id, resourceId: e.fisioId ? e.fisioId.toString() : '1',
                 title: (e.estado === 'CONFIRMADA' || e.estado === 'RESERVADO') ? (e.pacienteNombre || 'OCUPADO').toUpperCase() : (e.estado === 'ANULADA' ? 'BLOQUEADO' : 'LIBRE'),
@@ -213,6 +242,11 @@
         });
         calendar.render(); cargarEstadisticas();
 
+
+        document.getElementById('fechaNavegador').addEventListener('change', function() {
+            if (this.value) calendar.gotoDate(this.value);
+        });
+
         document.getElementById('formGenerar').onsubmit = async (e) => {
             e.preventDefault(); const f = document.getElementById('fechaGenerar').value;
             try {
@@ -222,15 +256,62 @@
         };
     });
 
+
+    let filtroActual = 'total';
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('inputAnio').value = new Date().getFullYear();
+    });
+
+    function cambiarFiltro(nuevoFiltro) {
+        filtroActual = nuevoFiltro;
+
+
+        if(nuevoFiltro === 'hoy' || nuevoFiltro === 'total') {
+            document.getElementById('inputMes').value = '';
+            document.getElementById('fltHoy').checked = (nuevoFiltro === 'hoy');
+            document.getElementById('fltTotal').checked = (nuevoFiltro === 'total');
+        } else {
+            document.getElementById('fltHoy').checked = false;
+            document.getElementById('fltTotal').checked = false;
+        }
+
+        cargarEstadisticas();
+    }
+
     async function cargarEstadisticas() {
         try {
-            const r = await fetch('http://localhost:8080/api/citas/admin/estadisticas');
+            const r = await fetch('http://localhost:8080/api/citas/admin/todas');
             if (r.ok) {
-                const s = await r.json();
-                document.getElementById('statTotal').innerText = s.total || 0; document.getElementById('statLibres').innerText = s.libres || 0;
-                document.getElementById('statConfirmadas').innerText = s.confirmadas || 0; document.getElementById('statAnuladas').innerText = s.anuladas || 0;
+                const citas = await r.json();
+                let citasFiltradas = citas;
+
+                if (filtroActual === 'hoy') {
+                    const ahora = new Date();
+                    const hoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+                    citasFiltradas = citas.filter(c => c.fechaHora.startsWith(hoy));
+                } else if (filtroActual === 'mes') {
+                    const mesSeleccionado = document.getElementById('inputMes').value; // Formato YYYY-MM
+                    if(mesSeleccionado) {
+                        citasFiltradas = citas.filter(c => c.fechaHora.startsWith(mesSeleccionado));
+                    }
+                } else if (filtroActual === 'anio') {
+                    const anioSeleccionado = document.getElementById('inputAnio').value; // Formato YYYY
+                    if(anioSeleccionado) {
+                        citasFiltradas = citas.filter(c => c.fechaHora.startsWith(anioSeleccionado.toString()));
+                    }
+                }
+
+
+                document.getElementById('statTotal').innerText = citasFiltradas.length;
+                document.getElementById('statLibres').innerText = citasFiltradas.filter(c => c.estado === 'LIBRE').length;
+                document.getElementById('statConfirmadas').innerText = citasFiltradas.filter(c => c.estado === 'CONFIRMADA' || c.estado === 'RESERVADO').length;
+                document.getElementById('statAnuladas').innerText = citasFiltradas.filter(c => c.estado === 'ANULADA').length;
             }
-        } catch(e) { console.log("Estadísticas offline"); }
+        } catch(e) {
+            console.log("Estadísticas offline");
+        }
     }
 
     async function buscarPacientes() {
@@ -310,24 +391,46 @@
             } else {
                 const r = await fetch(`http://localhost:8080/api/citas/paciente/${pId}`);
                 if (r.ok) {
-                    const cs = await r.json();
+                    const data = await r.json();
+
+
+                    if (data.paciente) {
+                        html += `<div class="bg-light p-3 rounded border mb-4 text-start shadow-sm">
+                                    <h6 class="text-primary fw-bold border-bottom pb-2 mb-2"><i class="bi bi-person-lines-fill"></i> Datos de Contacto</h6>
+                                    <div class="row g-2 small">
+                                        <div class="col-sm-6"><strong>DNI/NIE:</strong> ${data.paciente.dni || 'No consta'}</div>
+                                        <div class="col-sm-6"><strong>Teléfono:</strong> ${data.paciente.telefono || 'No consta'}</div>
+                                        <div class="col-12"><strong>Email:</strong> ${data.paciente.email || 'No consta'}</div>
+                                    </div>
+                                 </div>`;
+                    }
+
+
+                    const cs = data.historial || [];
                     if (cs.length === 0) {
                         html += '<p>Sin historial previo.</p>';
                     } else {
-                        html += '<table class="table table-sm mt-3"><thead class="table-dark"><tr><th>Fecha</th><th>Estado</th><th>Notas</th></tr></thead><tbody>';
+                        html += '<h6 class="fw-bold text-secondary text-start"><i class="bi bi-clock-history"></i> Historial de Citas</h6>';
+                        html += '<div class="table-responsive"><table class="table table-sm mt-2"><thead class="table-dark"><tr><th>Fecha y Hora</th><th>Estado</th><th>Notas</th></tr></thead><tbody>';
                         cs.forEach(c => {
                             const f = new Date(c.fechaHora);
-                            html += `<tr><td>${f.toLocaleDateString()}</td><td><span class="badge ${c.estado === 'CONFIRMADA' ? 'bg-success' : 'bg-secondary'}">${c.estado}</span></td><td class="small">${c.notas || '-'}</td></tr>`;
+                            const horaFormateada = f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            html += `<tr>
+                                        <td>${f.toLocaleDateString()} a las ${horaFormateada}</td>
+                                        <td><span class="badge ${c.estado === 'CONFIRMADA' ? 'bg-success' : 'bg-secondary'}">${c.estado}</span></td>
+                                        <td class="small text-start text-muted">${c.notas || '-'}</td>
+                                     </tr>`;
                         });
-                        html += '</tbody></table>';
+                        html += '</tbody></table></div>';
                     }
                 } else {
                     html += '<div class="alert alert-danger">Error al obtener historial del servidor.</div>';
                 }
             }
 
-            html += `<hr><h6 class="fw-bold text-primary mt-3">Gestión de la cita seleccionada</h6>`;
-            html += `<div class="p-3 bg-light border rounded mb-3">
+
+            html += `<hr class="my-4"><h6 class="fw-bold text-primary text-start"><i class="bi bi-gear-fill"></i> Gestión de la cita seleccionada</h6>`;
+            html += `<div class="p-3 bg-light border rounded mb-3 text-start">
                         <label class="fw-bold small text-muted mb-2">Reasignar a otro profesional:</label>
                         <div class="input-group input-group-sm">
                             <select id="selectReasignar" class="form-select">
@@ -338,11 +441,11 @@
                         </div>
                      </div>`;
 
-            html += `<button class="btn btn-outline-danger w-100" onclick="liberarCitaDesdeHistorial(${citaId})">Anular y Liberar Cita Actual</button>`;
+            html += `<button class="btn btn-outline-danger w-100" onclick="liberarCitaDesdeHistorial(${citaId})"><i class="bi bi-trash"></i> Anular y Liberar Cita Actual</button>`;
             cont.innerHTML = html;
 
         } catch (error) {
-            cont.innerHTML = '<div class="alert alert-danger">Error al cargar los datos. El servidor no responde o no se encuentra la ruta.</div>';
+            cont.innerHTML = '<div class="alert alert-danger">Error al cargar los datos. El servidor no responde.</div>';
         }
     }
 

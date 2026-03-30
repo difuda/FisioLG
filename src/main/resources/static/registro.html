@@ -3,211 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finalizar Reserva - FisioLG</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>Confirmar Reserva - Fisioterapia y Osteopatía Lucía Garza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         :root { --verde: #88c057; --azul: #2c3e50; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--azul); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        body::before { content: ""; position: fixed; inset: 0; background: url('img/fondocalendario.png') center/cover; opacity: 0.3; z-index: -1; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 100%; max-width: 450px; border: none; }
-        h2 { color: var(--azul); font-weight: bold; text-align: center; }
-        .form-control, .form-select { padding: 10px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #ddd; }
-        .btn-confirmar { width: 100%; padding: 14px; background: var(--verde); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; transition: 0.3s; }
-        .btn-confirmar:hover { background: #6fa343; transform: translateY(-2px); }
-        .btn-confirmar:disabled { background: #ccc; }
-        .label-peque { font-size: 12px; font-weight: 700; color: #666; margin-bottom: 4px; display: block; text-transform: uppercase; }
-        .info-footer { font-size: 11px; color: #7f8c8d; text-align: center; margin-top: 15px; }
+        body {
+            background: var(--azul); font-family: 'Segoe UI', sans-serif;
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+        }
+        body::before {
+            content: ""; position: fixed; inset: 0;
+            background: url('img/fondocalendario.png') center/cover;
+            opacity: 0.3; z-index: -1;
+        }
+        .main-content { flex: 1; display: flex; align-items: center; padding: 40px 20px; }
+        .card-reserva {
+            max-width: 500px; margin: auto; background: white;
+            padding: 35px; border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .form-control { border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #f9fbfc; border: 1px solid #eee; }
+        .form-control:read-only { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
+        .btn-main {
+            background: var(--verde); color: white; border: none;
+            padding: 15px; border-radius: 12px; width: 100%;
+            font-weight: bold; transition: 0.3s;
+        }
+        footer { background: rgba(0, 0, 0, 0.7); color: white; padding: 20px; text-align: center; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Finaliza tu Reserva</h2>
-    <div id="mensajeAlerta" class="alert d-none" role="alert" style="border-radius: 12px; font-size: 14px;"></div>
-    <p id="cita-info" class="text-center fw-bold mb-4" style="color: var(--verde)"></p>
+<div class="main-content">
+    <div class="card-reserva">
+        <h2 id="tituloPrincipal" class="text-center fw-bold mb-4" style="color: var(--azul)">¿Cómo quieres continuar?</h2>
 
-    <form id="formRegistro">
-        <label class="label-peque">Datos Personales</label>
+        <div id="eleccionInicial" class="d-grid gap-3">
+            <button class="btn btn-outline-dark py-3 fw-bold" onclick="mostrarFormulario('invitado')">
+                RESERVAR COMO INVITADO
+            </button>
+            <button class="btn btn-primary py-3 fw-bold" onclick="mostrarFormulario('miembro')" style="background-color: var(--verde); border:none;">
+                QUIERO SER MIEMBRO (Y GESTIONAR MIS CITAS)
+            </button>
+        </div>
 
-        <div class="row g-2 mb-2">
-            <div class="col-6">
-                <input type="text" id="nombre" class="form-control mb-0" placeholder="Nombre" required>
+        <div id="alertaReserva" class="alert d-none" role="alert" style="border-radius: 12px; font-size: 14px;"></div>
+
+        <form id="formFinal" class="d-none">
+            <div class="row g-2">
+                <div class="col-6"><input type="text" id="nom" class="form-control" placeholder="Nombre" required></div>
+                <div class="col-6"><input type="text" id="ape" class="form-control" placeholder="Apellidos" required></div>
             </div>
-            <div class="col-6">
-                <input type="text" id="apellidos" class="form-control mb-0" placeholder="Apellidos" required>
+
+            <label class="small text-muted ms-1">Email validado:</label>
+            <input type="email" id="email" class="form-control" readonly>
+
+            <input type="text" id="dni" class="form-control" placeholder="DNI (12345678Z)" required>
+            <input type="tel" id="tel" class="form-control" placeholder="Teléfono móvil" required>
+
+            <div id="campoPassword" class="d-none">
+                <label class="small fw-bold text-success ms-1">Crea una contraseña para tu cuenta:</label>
+                <input type="password" id="pass" class="form-control" placeholder="Mínimo 6 caracteres">
             </div>
-        </div>
 
-        <input type="text" id="dni" class="form-control" placeholder="DNI / NIE" required>
-        <input type="tel" id="telefono" class="form-control" placeholder="Teléfono" required>
-        <input type="email" id="email" class="form-control" placeholder="Correo electrónico" required>
+            <div class="form-check mb-3 mt-2">
+                <input class="form-check-input" type="checkbox" id="rgpd" required>
+                <label class="form-check-label small text-muted" for="rgpd">Acepto la política de protección de datos.</label>
+            </div>
 
-        <label class="label-peque mt-2">Tipo de Reserva</label>
-        <select id="tipoReserva" class="form-select" onchange="togglePassword()">
-            <option value="invitado">Solo reservar (Invitado)</option>
-            <option value="miembro">Reservar y crear cuenta</option>
-        </select>
-
-        <div id="seccionPassword" style="display: none;">
-            <label class="label-peque">Nueva Contraseña</label>
-            <input type="password" id="password" class="form-control" placeholder="Mínimo 6 caracteres">
-        </div>
-
-        <div class="form-check my-3">
-            <input class="form-check-input" type="checkbox" id="checkRGPD" required>
-            <label class="form-check-label small text-muted" for="checkRGPD">
-                Acepto la <a href="#" data-bs-toggle="modal" data-bs-target="#modalPrivacidad" class="text-decoration-none fw-bold" style="color:var(--verde)">Política de Privacidad</a>.
-            </label>
-        </div>
-
-        <button type="submit" id="btnConfirmar" class="btn-confirmar shadow-sm">Confirmar y Reservar</button>
-    </form>
-    <p class="info-footer">Tus datos están protegidos según la normativa RGPD.</p>
+            <button type="submit" id="btnConfirmar" class="btn-main shadow-sm">CONFIRMAR MI CITA</button>
+            <button type="button" class="btn btn-link btn-sm w-100 mt-2 text-muted" onclick="location.reload()">Volver atrás</button>
+        </form>
+    </div>
 </div>
 
-<div class="modal fade" id="modalPrivacidad" tabindex="-1" aria-labelledby="modalPrivacidadLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="modalPrivacidadLabel">Política de Privacidad</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body text-start" style="font-size: 0.9rem;">
-                <p class="text-center"><strong>INFORMACIÓN SOBRE EL TRATAMIENTO DE DATOS DE SALUD</strong></p>
-                <p><strong>LUCIA GARZA VAZQUEZ</strong> le informa que para la prestación del servicio solicitado será necesario el tratamiento de datos personales especialmente protegidos (establecidos en el Art. 9.1 del RGPD 2016/679). La entidad se compromete a cumplir y adoptar las medidas de seguridad necesarias para garantizar la seguridad, integridad y confidencialidad de los datos a los que tenga acceso, obligándose al secreto profesional respecto de los mismos, subsistiendo dicha obligación aún después de finalizada la relación contractual.</p>
-                <p><em>* Cuando la persona interesada es menor de 14 años y la legislación vigente lo requiere, la marcación de la casilla de aceptación implica el consentimiento expreso del representante legal o tutor/a.</em></p>
-
-                <h6 class="fw-bold mt-4">Información básica sobre Protección de datos</h6>
-                <table class="table table-bordered mt-2">
-                    <tbody>
-                    <tr>
-                        <th scope="row" class="w-25 bg-light">Responsable del tratamiento</th>
-                        <td>LUCIA GARZA VAZQUEZ, NIF: 44470286Q, TLF: 644476621, EMAIL: fisioterapialuciagarza@gmail.com</td>
-                    </tr>
-                    <tr>
-                        <th scope="row" class="bg-light">Finalidades del tratamiento</th>
-                        <td>Prestación de servicios solicitados. Historial clínico.</td>
-                    </tr>
-                    <tr>
-                        <th scope="row" class="bg-light">Legitimaciones del tratamiento</th>
-                        <td>Ejecución de un contrato. Cumplimiento de obligación legal.</td>
-                    </tr>
-                    <tr>
-                        <th scope="row" class="bg-light">Destinatarios de los datos</th>
-                        <td>No se facilitarán datos a terceros, salvo obligación legal.</td>
-                    </tr>
-                    <tr>
-                        <th scope="row" class="bg-light">Ejercicio de derechos</th>
-                        <td>Para ejercer sus derechos de acceso, rectificación, oposición, limitación, portabilidad y supresión de sus datos, así como retirar su consentimiento, podrán dirigirse al responsable o presentar una reclamación ante la Agencia Española de Protección de Datos.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+<div class="modal fade" id="modalExito" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center" style="border-radius: 20px; border: none;">
+            <div class="modal-body p-5">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h3 class="fw-bold mt-3">¡Todo listo!</h3>
+                <p class="text-muted">Tu cita ha sido confirmada con éxito. Te esperamos en Fisioterapia y Osteopatía Lucía Garza</p>
+                <button onclick="location.href='index.html'" class="btn btn-success w-100 py-3 mt-3" style="border-radius: 12px; background: #88c057; border: none;">VOLVER AL INICIO</button>
             </div>
         </div>
     </div>
 </div>
 
+<footer>
+    <div class="container">
+        <p class="mb-1 fw-bold">Clínica Lucía Garza</p>
+        <p class="mb-0 text-muted small">© 2026 Fisioterapia y Osteopatía Lucía Garza - Gestión de Fisioterapia</p>
+    </div>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const params = new URLSearchParams(window.location.search);
-    const citaId = params.get('citaId');
+    let modoRegistro = 'invitado';
+    const citaId = new URLSearchParams(window.location.search).get('citaId') || sessionStorage.getItem('citaIdReserva');
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const nombreTemp = sessionStorage.getItem('userNombre') || '';
-        const apellidosTemp = sessionStorage.getItem('userApellidos') || '';
-        const dniTemp = sessionStorage.getItem('userDni') || '';
-        const telTemp = sessionStorage.getItem('userTelefono') || '';
-        const emailTemp = sessionStorage.getItem('userEmail') || '';
+    function mostrarFormulario(modo) {
+        modoRegistro = modo;
+        document.getElementById('eleccionInicial').classList.add('d-none');
+        document.getElementById('formFinal').classList.remove('d-none');
 
-        if (nombreTemp) document.getElementById('nombre').value = nombreTemp;
-        if (apellidosTemp) document.getElementById('apellidos').value = apellidosTemp;
-        if (dniTemp) document.getElementById('dni').value = dniTemp;
-        if (telTemp) document.getElementById('telefono').value = telTemp;
+        const titulo = document.getElementById('tituloPrincipal');
 
-        if (emailTemp) {
-            const emailInput = document.getElementById('email');
-            emailInput.value = emailTemp;
-            emailInput.readOnly = true;
-            emailInput.style.backgroundColor = '#e9ecef';
-            emailInput.style.color = '#6c757d';
+        if(modo === 'miembro') {
+            titulo.innerText = "Registro de Miembro";
+            document.getElementById('campoPassword').classList.remove('d-none');
+            document.getElementById('pass').required = true;
+        } else {
+            titulo.innerText = "Datos de Invitado";
+            document.getElementById('campoPassword').classList.add('d-none');
+            document.getElementById('pass').required = false;
         }
-    });
 
-    function mostrarAlerta(mensaje, tipo) {
-        const alerta = document.getElementById('mensajeAlerta');
-        alerta.innerText = mensaje;
-        alerta.className = `alert alert-${tipo} mb-4`;
-        alerta.classList.remove('d-none');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.getElementById('nom').value = sessionStorage.getItem('userNombre') || '';
+        document.getElementById('ape').value = sessionStorage.getItem('userApellidos') || '';
+        document.getElementById('email').value = sessionStorage.getItem('userEmail') || '';
+        document.getElementById('dni').value = sessionStorage.getItem('userDni') || '';
+        document.getElementById('tel').value = sessionStorage.getItem('userTelefono') || '';
     }
 
-    if (citaId) {
-        document.getElementById('cita-info').innerText = `Cita seleccionada`;
-    } else {
-        window.location.href = "calendario.html";
+    function mostrarAlerta(msg, tipo) {
+        const a = document.getElementById('alertaReserva');
+        a.innerText = msg; a.className = `alert alert-${tipo} mb-4`;
+        a.classList.remove('d-none');
     }
 
-    const togglePassword = () => {
-        const isMiembro = document.getElementById('tipoReserva').value === 'miembro';
-        document.getElementById('seccionPassword').style.display = isMiembro ? 'block' : 'none';
-        document.getElementById('password').required = isMiembro;
-    };
-
-    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+    document.getElementById('formFinal').onsubmit = async (e) => {
         e.preventDefault();
 
-        const alerta = document.getElementById('mensajeAlerta');
-        alerta.classList.add('d-none');
+        const dniReg = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i;
+        const dniInput = document.getElementById('dni').value.trim().toUpperCase();
 
-        if (!document.getElementById('checkRGPD').checked) {
-            mostrarAlerta("Debes aceptar la Política de Privacidad para continuar.", "danger");
-            return;
-        }
+        if (!dniReg.test(dniInput)) { mostrarAlerta("DNI no válido (8 números y letra).", "danger"); return; }
+        if (!citaId) { mostrarAlerta("Error: No se ha detectado la cita seleccionada.", "danger"); return; }
 
         const btn = document.getElementById('btnConfirmar');
-        const tipo = document.getElementById('tipoReserva').value;
-        const esMiembro = tipo === 'miembro';
+        btn.disabled = true; btn.innerText = "Finalizando...";
 
-        btn.disabled = true;
-        btn.innerText = "PROCESANDO...";
-
-        const data = {
-            nombre: document.getElementById('nombre').value.trim().toUpperCase(),
-            apellidos: document.getElementById('apellidos').value.trim().toUpperCase(),
-            dni: document.getElementById('dni').value.trim().toUpperCase(),
-            email: document.getElementById('email').value.trim(),
-            telefono: document.getElementById('telefono').value.trim(),
-            password: esMiembro ? document.getElementById('password').value : null
+        const pac = {
+            nombre: document.getElementById('nom').value.trim().toUpperCase(),
+            apellidos: document.getElementById('ape').value.trim().toUpperCase(),
+            dni: dniInput,
+            email: document.getElementById('email').value,
+            telefono: document.getElementById('tel').value.trim()
         };
 
+        if(modoRegistro === 'miembro') {
+            pac.password = document.getElementById('pass').value;
+        }
+
         try {
-            const resp = await fetch(`http://localhost:8080/api/citas/registro/${tipo}?citaId=${citaId}`, {
+            const resP = await fetch('http://localhost:8080/api/pacientes/registro', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(pac)
+            });
+            const pData = await resP.json();
+
+            await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ pacienteId: pData.id, estado: "CONFIRMADA" })
             });
 
-            if (resp.ok) {
-                mostrarAlerta("¡Reserva completada con éxito! Redirigiendo...", "success");
-                sessionStorage.clear();
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 2000);
-            } else {
-                const errorTexto = await resp.text();
-                mostrarAlerta("Error: " + (errorTexto || "No se pudo procesar la reserva."), "danger");
-                btn.disabled = false;
-                btn.innerText = "Confirmar y Reservar";
-            }
-        } catch (err) {
-            mostrarAlerta("Error de conexión con el servidor. Revisa tu internet.", "danger");
-            btn.disabled = false;
-            btn.innerText = "Confirmar y Reservar";
+            new bootstrap.Modal(document.getElementById('modalExito')).show();
+        } catch(e) {
+            mostrarAlerta("Error al confirmar. Inténtalo de nuevo.", "danger");
+            btn.disabled = false; btn.innerText = "CONFIRMAR MI CITA";
         }
-    });
+    };
 </script>
 </body>
 </html>

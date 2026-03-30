@@ -26,42 +26,40 @@ public class PacienteService {
 
     @Transactional
     public Paciente registrarOActualizar(Paciente datos) {
+        String emailLimpio = (datos.getEmail() != null) ? datos.getEmail().trim() : "";
+        String dniLimpio = (datos.getDni() != null) ? datos.getDni().trim().toUpperCase() : "";
 
 
-        Paciente paciente = pacienteRepository.findByEmail(datos.getEmail())
-                .map(existente -> {
-                    existente.setTelefono(datos.getTelefono());
-                    existente.setNombre(datos.getNombre());
-                    existente.setApellidos(datos.getApellidos());
-                    return pacienteRepository.save(existente);
-                })
-                .orElseGet(() -> {
-                    datos.setFechaRegistro(LocalDateTime.now());
-                    datos.setAceptoRgpd(true);
-                    return pacienteRepository.save(datos);
-                });
+        Paciente paciente = pacienteRepository.findByDni(dniLimpio)
+                .orElseGet(() -> pacienteRepository.findByEmail(emailLimpio).orElse(new Paciente()));
 
 
-        if (datos.getPassword() != null && !datos.getPassword().isEmpty()) {
-            User usuario = userRepository.findByEmail(paciente.getEmail())
-                    .orElse(new User());
+        if (datos.getNombre() != null) paciente.setNombre(datos.getNombre().toUpperCase().trim());
+        if (datos.getApellidos() != null) paciente.setApellidos(datos.getApellidos().toUpperCase().trim());
+        if (datos.getTelefono() != null) paciente.setTelefono(datos.getTelefono().trim());
 
-            usuario.setEmail(paciente.getEmail());
-            usuario.setUsername(paciente.getEmail());
-            usuario.setPassword(datos.getPassword());
-            usuario.setRol("PACIENTE");
-            usuario.setPaciente(paciente);
-            userRepository.save(usuario);
+        if (!dniLimpio.isEmpty()) paciente.setDni(dniLimpio);
+        if (!emailLimpio.isEmpty()) paciente.setEmail(emailLimpio);
+
+
+        if (datos.getPassword() != null && !datos.getPassword().isEmpty() && paciente.getUsuario() == null) {
+            User nuevoUsuario = new User();
+            nuevoUsuario.setUsername(emailLimpio);
+            nuevoUsuario.setEmail(emailLimpio);
+            nuevoUsuario.setPassword(datos.getPassword());
+            nuevoUsuario.setRol("PACIENTE");
+
+            nuevoUsuario = userRepository.save(nuevoUsuario);
+            paciente.setUsuario(nuevoUsuario);
         }
 
-        return paciente;
+        return pacienteRepository.save(paciente);
     }
 
     @Transactional
     public String generarTokenRecuperacion(String email) {
         return userRepository.findByEmail(email).map(u -> {
             String token = UUID.randomUUID().toString();
-
             u.setTokenRecuperacion(token);
             userRepository.save(u);
             return token;
@@ -70,11 +68,9 @@ public class PacienteService {
 
     @Transactional
     public boolean completarRecuperacion(String token, String nuevaPass) {
-
         return userRepository.findByTokenRecuperacion(token)
                 .map(u -> {
                     u.setPassword(nuevaPass);
-
                     u.setTokenRecuperacion(null);
                     userRepository.save(u);
                     return true;
