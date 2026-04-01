@@ -143,11 +143,15 @@
         const btnIrARegistro = document.getElementById('btnIrARegistro');
         let citaSeleccionadaId = null;
 
+        // Impide reservar citas en el pasado, asegurando la integridad del calendario
         const hoy = new Date().toISOString().split('T')[0];
         datePicker.value = hoy;
         datePicker.setAttribute('min', hoy);
 
+        // CONFIGURACIÓN DEL CALENDARIO PÚBLICO
         var calendar = new FullCalendar.Calendar(calendarEl, {
+            // 'listDay' es vital aquí: en lugar de mostrar columnas por profesional (como en admin),
+            // agrupa todos los huecos libres de 40 mins en una lista limpia por hora.
             initialView: 'listDay',
             locale: 'es',
             noEventsContent: 'No hay huecos disponibles para este día.',
@@ -157,6 +161,8 @@
                 center: 'title',
                 right: ''
             },
+            // Transforma los datos del backend para mostrar solo texto genérico ("DISPONIBLE"),
+            // ocultando cualquier dato interno (como el ID del Fisio).
             eventDataTransform: function(eventData) {
                 return {
                     id: eventData.id,
@@ -164,7 +170,9 @@
                     title: 'DISPONIBLE'
                 };
             },
+            // Llama a la API que SOLO devuelve los turnos en estado LIBRE
             events: 'http://localhost:8080/api/citas/disponibles',
+            // Personalización visual del botón de reserva de cada bloque de 40 mins
             eventContent: function(arg) {
                 return {
                     html: `<div class="disponible-label">
@@ -172,6 +180,7 @@
                            </div>`
                 };
             },
+            // Al hacer clic, captura el ID del turno (hueco) y prepara la transición
             eventClick: function(info) {
                 citaSeleccionadaId = info.event.id;
                 const fecha = info.event.start.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -184,10 +193,10 @@
 
         calendar.render();
 
+        // Al confirmar el hueco de 40 mins, guarda el ID en memoria y redirige al formulario RGPD
         btnIrARegistro.addEventListener('click', function() {
             if (citaSeleccionadaId) {
                 sessionStorage.setItem('citaIdReserva', citaSeleccionadaId);
-                // LA MAGIA ESTÁ AQUÍ: Ahora te manda al archivo correcto
                 window.location.href = "finalizar-reserva.html?citaId=" + citaSeleccionadaId;
             }
         });
@@ -197,12 +206,15 @@
         });
     });
 
+    // Gestión segura de la sesión del paciente en un dispositivo potencialmente público
     function logout() {
         localStorage.clear();
         sessionStorage.clear();
         window.location.href = "index.html";
     }
 
+    // Temporizador de inactividad (5 minutos = 300000ms).
+    // Medida de seguridad (RGPD) para evitar que la sesión quede abierta si el cliente se va.
     let tiempoInactividad;
     function resetTimer() {
         clearTimeout(tiempoInactividad);

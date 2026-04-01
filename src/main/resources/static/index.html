@@ -339,6 +339,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    // Recupera dinámicamente avisos de la clínica para mostrar en el carrusel
     document.addEventListener('DOMContentLoaded', function() {
         fetch('http://localhost:8080/api/noticias/actual')
             .then(response => response.json())
@@ -353,6 +354,7 @@
 
     const carrusel = document.getElementById('carrusel');
 
+    // Lógica visual del carrusel infinito de la portada
     setInterval(() => {
         const tarjeta = carrusel.firstElementChild;
         const gap = parseFloat(window.getComputedStyle(carrusel).gap) || 0;
@@ -368,7 +370,6 @@
         }, 800);
     }, 4000);
 
-
     function mostrarAlertaIndex(mensaje, tipo) {
         const alerta = document.getElementById('mensajeAlertaIndex');
         alerta.innerText = mensaje;
@@ -377,6 +378,9 @@
         alerta.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    // FLUJO DE NEGOCIO: Solicitar validación de correo (OTP)
+    // El cliente no crea cuenta manual con contraseña. Se asegura su identidad
+    // validando que tiene acceso al correo proporcionado antes de dejarle reservar un hueco.
     async function solicitarCodigo() {
         const email = document.getElementById('email').value.trim();
         const btn = document.getElementById('btnSolicitar');
@@ -384,6 +388,7 @@
 
         alerta.classList.add('d-none');
 
+        // Validación estricta del Check de Privacidad
         if (!email || !document.getElementById('checkRGPD').checked) {
             mostrarAlertaIndex("Por favor, introduce tu email y acepta las políticas de privacidad.", "danger");
             return;
@@ -396,6 +401,7 @@
             const response = await fetch(`http://localhost:8080/api/auth/send-otp?email=${encodeURIComponent(email)}`, { method: 'POST' });
 
             if (response.ok) {
+                // Despliega la interfaz para introducir el código
                 document.getElementById('seccion-verificacion').style.display = 'block';
                 document.getElementById('aviso-correo').classList.remove('d-none');
                 btn.innerText = "Código Enviado";
@@ -423,6 +429,7 @@
         btn.innerText = "SOLICITAR CÓDIGO DE VERIFICACIÓN";
     }
 
+    // VERIFICACIÓN DEL CÓDIGO Y PREPARACIÓN DE DATOS
     async function verificarYRegistrar() {
         const email = document.getElementById('email').value.trim();
         const codigo = document.getElementById('codigoIntroducido').value.trim();
@@ -439,16 +446,16 @@
             const respAuth = await fetch(`http://localhost:8080/api/auth/verify-otp?email=${encodeURIComponent(email)}&code=${encodeURIComponent(codigo)}`, { method: 'POST' });
 
             if (respAuth.ok) {
-
+                // Almacenamiento temporal (Session) de los datos de salud/personales.
+                // NO se guardan en BD aún, se transportan a la vista del calendario para
+                // crear el paciente solo cuando confirme su bloque de 40 mins.
                 sessionStorage.setItem('userEmail', email);
                 sessionStorage.setItem('userNombre', document.getElementById('nombre').value.trim());
                 sessionStorage.setItem('userApellidos', document.getElementById('apellidos').value.trim());
                 sessionStorage.setItem('userTelefono', document.getElementById('telefono').value.trim());
                 sessionStorage.setItem('userDni', document.getElementById('dni').value.trim());
 
-
                 window.location.href = "calendario.html";
-
             } else {
                 mostrarAlertaIndex("El código es incorrecto o ha caducado.", "danger");
             }
@@ -457,6 +464,8 @@
         }
     }
 
+    // Login para pacientes ya registrados.
+    // Redirige al panel de paciente en lugar de al calendario, para que puedan ver su historial.
     document.getElementById('formLoginMiembro').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
@@ -476,7 +485,6 @@
                 localStorage.setItem('pacienteEmail', data.email);
                 sessionStorage.setItem('userEmail', data.email);
 
-
                 if(data.nombre && data.nombre !== "Paciente") {
                     sessionStorage.setItem('userNombre', data.nombre);
                 }
@@ -493,7 +501,6 @@
         }
     });
 
-
     document.getElementById('formRecuperarPass').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('recuperarEmail').value.trim();
@@ -505,7 +512,6 @@
         alerta.classList.add('d-none');
 
         try {
-
             const resp = await fetch(`http://localhost:8080/api/auth/olvidar-password?email=${encodeURIComponent(email)}`, {
                 method: 'POST'
             });
@@ -513,7 +519,7 @@
             if (resp.ok) {
                 alerta.innerText = "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.";
                 alerta.className = "alert alert-success mt-3 small py-2 d-block";
-                document.getElementById('recuperarEmail').value = ''; // Limpiamos el campo
+                document.getElementById('recuperarEmail').value = '';
             } else {
                 alerta.innerText = "No se ha podido procesar la solicitud.";
                 alerta.className = "alert alert-danger mt-3 small py-2 d-block";
@@ -526,7 +532,6 @@
             btn.innerText = "ENVIAR ENLACE";
         }
     });
-
 </script>
 </body>
 </html>

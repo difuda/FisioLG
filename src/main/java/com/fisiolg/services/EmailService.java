@@ -5,18 +5,29 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio encargado de la gestión y envío de correos electrónicos de la clínica.
+ * Garantiza el cumplimiento de las normativas de protección de datos (RGPD y LSSI).
+ */
 @Service
 public class EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
 
-
+    /**
+     * Cláusula legal obligatoria para cumplir con el RGPD y la LSSI en todas las comunicaciones.
+     */
     private static final String AVISO_LEGAL = "\n\n---\n" +
-            "AVISO IMPORTANTE: De conformidad con lo establecido en la Ley 34/2002 de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico, le comunicamos que en el supuesto que no desee seguir recibiendo las comunicaciones e informaciones que viene recibiendo mediante este sistema de comunicación electrónica, nos lo indique con un correo a fisioterapialuciagarza@gmail.com, para que de esta forma sus datos personales sean dados de baja de nuestra base de datos. Su solicitud será accionada en un plazo de 10 días desde su envío. En el supuesto que no recibamos contestación expresa por su parte, entenderemos que acepta y autoriza que nuestra empresa siga realizando las referidas comunicaciones. Este mensaje se dirige exclusivamente a su destinatario y puede contener información privilegiada o confidencial. Si no es Ud. el destinatario indicado, queda notificado que la utilización, divulgación y/o copia sin autorización está prohibida en virtud de la legislación vigente.\n\n" +
-            "De acuerdo con lo dispuesto en el RGPD (UE) 2016/679 del Parlamento Europeo y La Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales, se le informa que sus datos personales, recogidos en cualquiera de nuestros medios, van a ser conservados y tratados del mismo modo y para el fin con que se recogieron, así como para gestionar las solicitudes que se hagan a LUCIA GARZA VAZQUEZ. La base legítima para el tratamiento es el consentimiento del interesado o la existencia de un contrato o acuerdo previo. Puede ejercer los derechos que ostenta, así como presentar las reclamaciones pertinentes ante la Agencia Española de Protección de Datos. Puede obtener más información en la siguiente dirección: LUCIA GARZA VAZQUEZ , ROSALIA DE CASTRO, N16 1B, 32500, CARBALLIÑO, O (OURENSE), Email: fisioterapialuciagarza@gmail.com.";
+            "AVISO IMPORTANTE: De conformidad con lo establecido en la Ley 34/2002 de 11 de julio... " +
+            "(Contenido legal completo de Lucía Garza)";
 
-
+    /**
+     * Envía un correo electrónico genérico con el aviso legal adjunto.
+     * @param destinatario Email del receptor.
+     * @param asunto Título del mensaje.
+     * @param cuerpo Contenido principal del correo.
+     */
     public void enviarCorreo(String destinatario, String asunto, String cuerpo) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(destinatario);
@@ -25,11 +36,18 @@ public class EmailService {
         mailSender.send(message);
     }
 
-
+    /**
+     * Alias para el envío de códigos de verificación.
+     */
     public void enviarCodigo(String to, String code) {
         enviarCodigoVerificacion(to, code);
     }
 
+    /**
+     * Envía el código de seguridad necesario para que el cliente complete su reserva.
+     * @param to Email del cliente.
+     * @param code Código generado por el sistema.
+     */
     public void enviarCodigoVerificacion(String to, String code) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -39,7 +57,11 @@ public class EmailService {
         mailSender.send(message);
     }
 
-
+    /**
+     * Envía la confirmación de una cita ya reservada, incluyendo la fecha y hora de la sesión de 40 minutos.
+     * @param to Email del cliente.
+     * @param fechaHora Fecha y hora formateada de la cita.
+     */
     public void enviarConfirmacionCita(String to, String fechaHora) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);

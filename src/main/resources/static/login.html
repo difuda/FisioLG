@@ -59,6 +59,7 @@
 </div>
 
 <script>
+    // LÓGICA DE AUTENTICACIÓN DEL PERSONAL
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const user = document.getElementById('usuario').value.trim().toLowerCase();
@@ -67,9 +68,17 @@
 
         alerta.classList.add('d-none');
 
+        // VALIDACIÓN MVP (Producto Mínimo Viable)
+        // NOTA DE SEGURIDAD: Actualmente las credenciales están hardcodeadas en el frontend
+        // para facilitar el despliegue inicial. En fases posteriores, esto debe conectarse
+        // al endpoint /api/login del backend (Entidad User con rol ADMIN/FISIO) para cumplir
+        // con los estándares más estrictos de protección de datos empresariales.
         if (["lucia", "anxela", "admin"].includes(user) && pass === 'FisioLG2026') {
+            // Se guardan banderas de sesión para habilitar la interfaz de gestión
             localStorage.setItem('userName', user);
             localStorage.setItem('isAdmin', 'true');
+
+            // Redirección al cerebro de la clínica (donde se gestionan los bloques de 40 mins)
             window.location.href = "agenda-admin.html";
         } else {
             alerta.innerText = "Usuario o contraseña incorrectos.";

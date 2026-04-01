@@ -24,6 +24,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
         .form-control { border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #f9fbfc; border: 1px solid #eee; }
+        /* El email validado por OTP no se puede editar aquí por seguridad */
         .form-control:read-only { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
         .btn-main {
             background: var(--verde); color: white; border: none;
@@ -101,8 +102,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let modoRegistro = 'invitado';
+    // Recupera el ID del bloque horario que el cliente seleccionó en la pantalla anterior
     const citaId = new URLSearchParams(window.location.search).get('citaId') || sessionStorage.getItem('citaIdReserva');
 
+    // Muestra el formulario adaptado según la elección del usuario (crear cuenta o no)
     function mostrarFormulario(modo) {
         modoRegistro = modo;
         document.getElementById('eleccionInicial').classList.add('d-none');
@@ -120,6 +123,7 @@
             document.getElementById('pass').required = false;
         }
 
+        // Rellena los campos automáticamente con los datos cacheados del Index
         document.getElementById('nom').value = sessionStorage.getItem('userNombre') || '';
         document.getElementById('ape').value = sessionStorage.getItem('userApellidos') || '';
         document.getElementById('email').value = sessionStorage.getItem('userEmail') || '';
@@ -133,9 +137,11 @@
         a.classList.remove('d-none');
     }
 
+    // PROCESO DE FINALIZACIÓN DE RESERVA
     document.getElementById('formFinal').onsubmit = async (e) => {
         e.preventDefault();
 
+        // Validación estricta del DNI español
         const dniReg = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i;
         const dniInput = document.getElementById('dni').value.trim().toUpperCase();
 
@@ -145,6 +151,7 @@
         const btn = document.getElementById('btnConfirmar');
         btn.disabled = true; btn.innerText = "Finalizando...";
 
+        // Sanitización de datos antes de enviarlos al backend (mayúsculas)
         const pac = {
             nombre: document.getElementById('nom').value.trim().toUpperCase(),
             apellidos: document.getElementById('ape').value.trim().toUpperCase(),
@@ -158,6 +165,7 @@
         }
 
         try {
+            // 1. Registra o actualiza al paciente en la base de datos
             const resP = await fetch('http://localhost:8080/api/pacientes/registro', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -165,6 +173,9 @@
             });
             const pData = await resP.json();
 
+            // 2. VINCULACIÓN CRÍTICA: Asigna el paciente al bloque de 40 minutos (Cita/Turno)
+            // Esto cambia el estado a CONFIRMADA, haciéndolo desaparecer del calendario público,
+            // pero manteniendo oculto al profesional asignado.
             await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},

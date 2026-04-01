@@ -125,7 +125,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Detalles de <span id="nombrePacienteHistorial" class="fw-bold"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="this.blur()"></button>
             </div>
             <div class="modal-body" id="contenidoHistorial"></div>
         </div>
@@ -196,21 +196,25 @@
             data.forEach(x => s.innerHTML += `<option value="${x.id}">${x.nombre} - ${x.precio}€</option>`);
         }).catch(() => console.log("Servicios no disponibles"));
 
+        // INICIALIZACIÓN DEL MOTOR DE CALENDARIO (FullCalendar)
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
             height: 'auto',
+            // NÚCLEO DE NEGOCIO: La vista separa a los profesionales (resources) SOLO para el administrador.
+            // La duración de los slots se fija estrictamente a 40 minutos (slotDuration).
             initialView: 'resourceTimeGridDay', locale: 'es', slotMinTime: '09:00:00', slotMaxTime: '21:00:00', slotDuration: '00:40:00',
             allDaySlot: false, resources: [{ id: '1', title: 'Lucía Garza' }, { id: '2', title: 'Ánxela' }],
             events: 'http://localhost:8080/api/citas/admin/todas',
-
 
             datesSet: function(info) {
                 const fechaActual = info.startStr.split('T')[0];
                 document.getElementById('fechaNavegador').value = fechaActual;
             },
 
+            // Transforma los datos de la BD (Citas/Turnos) en bloques visuales en el calendario
             eventDataTransform: (e) => ({
                 id: e.id, resourceId: e.fisioId ? e.fisioId.toString() : '1',
                 title: (e.estado === 'CONFIRMADA' || e.estado === 'RESERVADO') ? (e.pacienteNombre || 'OCUPADO').toUpperCase() : (e.estado === 'ANULADA' ? 'BLOQUEADO' : 'LIBRE'),
+                // Se garantiza matemáticamente que el final visual coincida con el bloque de 40 mins
                 start: e.fechaHora, end: new Date(new Date(e.fechaHora).getTime() + 40 * 60000).toISOString(),
                 backgroundColor: (e.estado === 'CONFIRMADA' || e.estado === 'RESERVADO') ? '#444' : (e.estado === 'ANULADA' ? '#dc3545' : '#E8F5E9'),
                 textColor: (e.estado === 'CONFIRMADA' || e.estado === 'RESERVADO') || e.estado === 'ANULADA' ? '#fff' : '#2e7d32',
@@ -218,6 +222,8 @@
             }),
             eventClick: async (info) => {
                 const id = info.event.id; const est = info.event.extendedProps.estado;
+
+                // Flujo 1: Asignación rápida de paciente a hueco desde el buscador
                 if (pacienteSeleccionadoParaCita) {
                     pedirConfirmacion(`¿Asignar a ${pacienteSeleccionadoParaCita.nombre} a las ${info.event.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}?`, async () => {
                         try {
@@ -225,14 +231,20 @@
                             if (r.ok) { cancelarSeleccion(); calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Paciente asignado con éxito", "success"); }
                         } catch(e) { mostrarAlerta("Error al conectar", "danger"); }
                     });
-                } else if (est === 'LIBRE') {
+                }
+                // Flujo 2: Clic en hueco vacío -> Abre modal de reserva manual en recepción
+                else if (est === 'LIBRE') {
                     document.getElementById('citaIdSeleccionada').value = id;
                     document.getElementById('textoFechaHora').innerText = info.event.start.toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' });
                     new bootstrap.Modal(document.getElementById('modalGestionCita')).show();
-                } else if (est === 'CONFIRMADA' || est === 'RESERVADO') {
+                }
+                // Flujo 3: Clic en cita ya confirmada -> Carga datos sensibles e historial del paciente
+                else if (est === 'CONFIRMADA' || est === 'RESERVADO') {
                     const currentFisioId = info.event.getResources()[0].id;
                     abrirHistorialYGestion(id, info.event.extendedProps.pacienteId, info.event.title, currentFisioId);
-                } else if (est === 'ANULADA') {
+                }
+                // Flujo 4: Clic en hueco bloqueado/anulado para volver a ofertarlo
+                else if (est === 'ANULADA') {
                     pedirConfirmacion("¿Quieres liberar este hueco bloqueado?", async () => {
                         await fetch(`http://localhost:8080/api/citas/actualizar/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pacienteId: null }) });
                         calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Hueco liberado", "success");
@@ -241,7 +253,6 @@
             }
         });
         calendar.render(); cargarEstadisticas();
-
 
         document.getElementById('fechaNavegador').addEventListener('change', function() {
             if (this.value) calendar.gotoDate(this.value);
@@ -256,9 +267,7 @@
         };
     });
 
-
     let filtroActual = 'total';
-
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('inputAnio').value = new Date().getFullYear();
@@ -266,7 +275,6 @@
 
     function cambiarFiltro(nuevoFiltro) {
         filtroActual = nuevoFiltro;
-
 
         if(nuevoFiltro === 'hoy' || nuevoFiltro === 'total') {
             document.getElementById('inputMes').value = '';
@@ -292,17 +300,16 @@
                     const hoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
                     citasFiltradas = citas.filter(c => c.fechaHora.startsWith(hoy));
                 } else if (filtroActual === 'mes') {
-                    const mesSeleccionado = document.getElementById('inputMes').value; // Formato YYYY-MM
+                    const mesSeleccionado = document.getElementById('inputMes').value;
                     if(mesSeleccionado) {
                         citasFiltradas = citas.filter(c => c.fechaHora.startsWith(mesSeleccionado));
                     }
                 } else if (filtroActual === 'anio') {
-                    const anioSeleccionado = document.getElementById('inputAnio').value; // Formato YYYY
+                    const anioSeleccionado = document.getElementById('inputAnio').value;
                     if(anioSeleccionado) {
                         citasFiltradas = citas.filter(c => c.fechaHora.startsWith(anioSeleccionado.toString()));
                     }
                 }
-
 
                 document.getElementById('statTotal').innerText = citasFiltradas.length;
                 document.getElementById('statLibres').innerText = citasFiltradas.filter(c => c.estado === 'LIBRE').length;
@@ -314,6 +321,7 @@
         }
     }
 
+    // Funciones de búsqueda asíncrona para vincular pacientes existentes a huecos nuevos
     async function buscarPacientes() {
         const t = document.getElementById('busquedaPaciente').value; const div = document.getElementById('resultadosBusqueda');
         if (t.length < 2) { div.innerHTML = ''; return; }
@@ -331,7 +339,7 @@
 
     function cancelarSeleccion() { pacienteSeleccionadoParaCita = null; document.getElementById('alertaSeleccion').classList.add('d-none'); }
 
-
+    // Procesa el alta de un paciente desde recepción y lo vincula al hueco de 40 mins seleccionado
     function enviarReservaManual() {
         const id = document.getElementById('citaIdSeleccionada').value;
         const sId = document.getElementById('resServicio').value;
@@ -358,6 +366,7 @@
             body: p
         }).then(r => {
             if(r.ok) {
+                if (document.activeElement) { document.activeElement.blur(); }
                 bootstrap.Modal.getInstance(document.getElementById('modalGestionCita')).hide();
                 document.getElementById('formReservaManual').reset();
                 calendar.refetchEvents();
@@ -373,11 +382,18 @@
         pedirConfirmacion("¿Bloquear este hueco? Desaparecerá de la web de clientes.", () => {
             const id = document.getElementById('citaIdSeleccionada').value;
             fetch('http://localhost:8080/api/citas/bloquear-manual', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ citaId: id }) }).then(r => {
-                if(r.ok) { bootstrap.Modal.getInstance(document.getElementById('modalGestionCita')).hide(); calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Hueco bloqueado", "danger"); }
+                if(r.ok) {
+                    if (document.activeElement) { document.activeElement.blur(); }
+                    bootstrap.Modal.getInstance(document.getElementById('modalGestionCita')).hide();
+                    calendar.refetchEvents(); cargarEstadisticas();
+                    mostrarAlerta("Hueco bloqueado", "danger");
+                }
             });
         });
     }
 
+    // CARGA DE DATOS SENSIBLES (RGPD)
+    // Recupera la información de contacto y clínica del paciente para mostrarla en el backoffice
     async function abrirHistorialYGestion(citaId, pId, nP, fisioIdActual) {
         document.getElementById('nombrePacienteHistorial').innerText = nP;
         const cont = document.getElementById('contenidoHistorial');
@@ -393,7 +409,6 @@
                 if (r.ok) {
                     const data = await r.json();
 
-
                     if (data.paciente) {
                         html += `<div class="bg-light p-3 rounded border mb-4 text-start shadow-sm">
                                     <h6 class="text-primary fw-bold border-bottom pb-2 mb-2"><i class="bi bi-person-lines-fill"></i> Datos de Contacto</h6>
@@ -404,7 +419,6 @@
                                     </div>
                                  </div>`;
                     }
-
 
                     const cs = data.historial || [];
                     if (cs.length === 0) {
@@ -428,7 +442,7 @@
                 }
             }
 
-
+            // Opciones de gestión administrativa de la cita seleccionada
             html += `<hr class="my-4"><h6 class="fw-bold text-primary text-start"><i class="bi bi-gear-fill"></i> Gestión de la cita seleccionada</h6>`;
             html += `<div class="p-3 bg-light border rounded mb-3 text-start">
                         <label class="fw-bold small text-muted mb-2">Reasignar a otro profesional:</label>
@@ -449,6 +463,9 @@
         }
     }
 
+    // APLICACIÓN DE REGLA DE NEGOCIO:
+    // El cliente reservó un "hueco de 40 mins", por lo que administrativamente podemos moverlo
+    // a otro profesional que esté libre en esa misma franja horaria sin afectar la reserva del paciente.
     function reasignarProfesional(citaIdActual) {
         const nuevoFisioId = document.getElementById('selectReasignar').value;
         const eventoActual = calendar.getEventById(citaIdActual);
@@ -462,6 +479,7 @@
         const horaInicio = eventoActual.start;
 
         const todosLosEventos = calendar.getEvents();
+        // Busca si el otro profesional tiene un bloque libre exactamente a la misma hora
         const huecoDestino = todosLosEventos.find(e =>
             e.getResources()[0].id === nuevoFisioId &&
             e.start.getTime() === horaInicio.getTime()
@@ -478,17 +496,20 @@
 
         pedirConfirmacion("¿Confirmas que quieres mover al paciente de agenda?", async () => {
             try {
+                // Asigna al paciente al nuevo hueco
                 const r1 = await fetch(`http://localhost:8080/api/citas/actualizar/${huecoDestino.id}`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pacienteId: pacienteId, notasClinicas: "Movido de agenda por Admin" })
                 });
 
+                // Libera el hueco original
                 const r2 = await fetch(`http://localhost:8080/api/citas/actualizar/${citaIdActual}`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pacienteId: null })
                 });
 
                 if (r1.ok && r2.ok) {
+                    if (document.activeElement) { document.activeElement.blur(); }
                     bootstrap.Modal.getInstance(document.getElementById('modalHistorial')).hide();
                     calendar.refetchEvents();
                     mostrarAlerta("Paciente reasignado correctamente", "success");
@@ -504,7 +525,11 @@
     function liberarCitaDesdeHistorial(id) {
         pedirConfirmacion("¿Anular y liberar esta cita?", async () => {
             await fetch(`http://localhost:8080/api/citas/actualizar/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pacienteId: null }) });
-            bootstrap.Modal.getInstance(document.getElementById('modalHistorial')).hide(); calendar.refetchEvents(); cargarEstadisticas(); mostrarAlerta("Cita anulada", "info");
+            if (document.activeElement) { document.activeElement.blur(); }
+            bootstrap.Modal.getInstance(document.getElementById('modalHistorial')).hide();
+            calendar.refetchEvents();
+            cargarEstadisticas();
+            mostrarAlerta("Cita anulada", "info");
         });
     }
 

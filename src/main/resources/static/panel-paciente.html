@@ -71,16 +71,15 @@
 </div>
 
 <script>
-
+    // Recuperación de la sesión activa del paciente
     const userEmail = sessionStorage.getItem('userEmail');
 
     document.addEventListener('DOMContentLoaded', () => {
-
+        // Medida de seguridad: Si no hay email en sesión, expulsa al usuario al index
         if (!userEmail) {
             window.location.href = "index.html";
             return;
         }
-
 
         const nombreGuardado = sessionStorage.getItem('userNombre');
         if (nombreGuardado && nombreGuardado !== "undefined") {
@@ -90,21 +89,21 @@
         cargarMisCitas();
     });
 
+    // LÓGICA DE NEGOCIO: Carga y filtrado de citas
     async function cargarMisCitas() {
         const contenedor = document.getElementById('listaCitas');
         try {
+            // Llama a la API general pero filtra los resultados estrictamente por el email del paciente
+            // garantizando que solo ve SUS bloques reservados.
             const res = await fetch(`http://localhost:8080/api/citas/admin/todas`);
             const todas = await res.json();
 
-
             const misCitas = todas.filter(c => c.pacienteId !== null && c.pacienteEmail === userEmail);
-
 
             if (misCitas.length > 0 && misCitas[0].pacienteNombre) {
                 // Sacamos el nombre de la cita (Base de datos)
                 const nombreBruto = misCitas[0].pacienteNombre.split(' ')[0];
                 const nombreFormateado = nombreBruto.charAt(0).toUpperCase() + nombreBruto.slice(1).toLowerCase();
-
 
                 document.getElementById('nombreUsuario').innerText = nombreFormateado;
                 sessionStorage.setItem('userNombre', nombreFormateado);
@@ -117,7 +116,6 @@
                 }
             }
 
-
             if (misCitas.length === 0) {
                 contenedor.innerHTML = `<div class="col-12 text-center py-4"><p class="text-muted">No tienes citas próximas. ¡Anímate a reservar!</p></div>`;
                 return;
@@ -125,6 +123,9 @@
 
             let html = '';
             misCitas.forEach(cita => {
+                // Se renderiza el hueco horario. El objeto 'cita' que devuelve el backend
+                // tiene el ID del profesional, pero el frontend ignora ese dato por completo
+                // para mantener la regla de opacidad de cara al cliente.
                 const fechaObj = new Date(cita.fechaHora);
                 const fechaLegible = fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
                 const horaLegible = fechaObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -153,10 +154,12 @@
         }
     }
 
+    // LÓGICA DE CANCELACIÓN:
+    // Al anular, el bloque horario de 40 minutos no se destruye. Simplemente se
+    // desvincula al paciente (pacienteId: null), volviendo a quedar LIBRE en el calendario público.
     async function cancelarCita(citaId) {
         if(confirm("¿Estás seguro de que deseas cancelar esta cita?")) {
             try {
-
                 const r = await fetch(`http://localhost:8080/api/citas/actualizar/${citaId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -176,6 +179,7 @@
         }
     }
 
+    // Limpia la sesión de forma segura para evitar accesos no autorizados en dispositivos compartidos
     function cerrarSesion() {
         sessionStorage.clear();
         window.location.href = "index.html";

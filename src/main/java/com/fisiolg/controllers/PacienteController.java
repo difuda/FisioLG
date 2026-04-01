@@ -11,8 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controlador REST para gestionar la información, registro y recuperación de contraseñas de los pacientes.
+ */
 @RestController
 @RequestMapping("/api/pacientes")
+// TODO: Para producción, cambiar "*" por el dominio específico del frontend para asegurar la protección de datos.
 @CrossOrigin(origins = "*")
 public class PacienteController {
 
@@ -25,65 +29,111 @@ public class PacienteController {
     @Autowired
     private PacienteRepository pacienteRepository;
 
-
+    /**
+     * Obtiene la lista completa de pacientes.
+     */
     @GetMapping
-    public List<Paciente> listarPacientes() {
-        return pacienteService.listarTodos();
+    public ResponseEntity<?> listarPacientes() {
+        try {
+            return ResponseEntity.ok(pacienteService.listarTodos());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno al listar los pacientes"));
+        }
     }
 
-
+    /**
+     * Busca pacientes por coincidencias en su nombre o DNI.
+     */
     @GetMapping("/buscar")
-    public ResponseEntity<List<Paciente>> buscarPacientes(@RequestParam String term) {
-
-        List<Paciente> resultados = pacienteRepository.findByNombreContainingIgnoreCaseOrDniContainingIgnoreCase(term, term);
-        return ResponseEntity.ok(resultados);
+    public ResponseEntity<?> buscarPacientes(@RequestParam String term) {
+        try {
+            if (term == null || term.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El término de búsqueda no puede estar vacío"));
+            }
+            List<Paciente> resultados = pacienteRepository.findByNombreContainingIgnoreCaseOrDniContainingIgnoreCase(term, term);
+            return ResponseEntity.ok(resultados);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno al buscar pacientes"));
+        }
     }
 
-
+    /**
+     * Registra un nuevo paciente o actualiza los datos de uno existente.
+     */
     @PostMapping("/registro")
-    public ResponseEntity<Paciente> guardar(@RequestBody Paciente paciente) {
-        Paciente guardado = pacienteService.registrarOActualizar(paciente);
-        return ResponseEntity.ok(guardado);
+    public ResponseEntity<?> guardar(@RequestBody Paciente paciente) {
+        try {
+            Paciente guardado = pacienteService.registrarOActualizar(paciente);
+            return ResponseEntity.ok(guardado);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error al guardar el paciente: " + e.getMessage()));
+        }
     }
 
-
+    /**
+     * Solicita la recuperación de contraseña generando un token y enviando un enlace al correo.
+     */
     @PostMapping("/olvido-password")
     public ResponseEntity<?> solicitarRecuperacion(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
+        try {
+            String email = request.get("email");
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El email es obligatorio"));
+            }
 
+            String token = pacienteService.generarTokenRecuperacion(email);
 
-        String token = pacienteService.generarTokenRecuperacion(email);
+            if (token != null) {
+                // TODO: Cambiar localhost por la URL real del servidor en producción
+                String enlace = "http://localhost:8080/restablecer-password.html?token=" + token;
 
-        if (token != null) {
+                emailService.enviarCorreo(email, "Recuperar Contraseña - Fisioterapia y Osteopatía Lucía Garza",
+                        "Hola. Has solicitado restablecer tu contraseña. Haz clic aquí: " + enlace);
 
-            String enlace = "http://localhost:8080/restablecer-password.html?token=" + token;
+                return ResponseEntity.ok(Map.of("message", "Email enviado con éxito"));
+            }
+            return ResponseEntity.status(404).body(Map.of("error", "El email no está registrado"));
 
-            emailService.enviarCorreo(email, "Recuperar Contraseña - Fisioterapia y Osteopatía Lucía Garza",
-                    "Hola. Has solicitado restablecer tu contraseña. Haz clic aquí: " + enlace);
-
-            return ResponseEntity.ok(Map.of("message", "Email enviado con éxito"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error al procesar la solicitud de recuperación"));
         }
-        return ResponseEntity.status(404).body(Map.of("error", "El email no está registrado"));
     }
 
-
+    /**
+     * Restablece la contraseña del paciente utilizando el token de recuperación.
+     */
     @PostMapping("/restablecer-password")
     public ResponseEntity<?> restablecer(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        String nuevaPass = request.get("password");
+        try {
+            String token = request.get("token");
+            String nuevaPass = request.get("password");
 
-        boolean exito = pacienteService.completarRecuperacion(token, nuevaPass);
-        if (exito) {
-            return ResponseEntity.ok(Map.of("message", "Contraseña cambiada correctamente"));
+            if (token == null || nuevaPass == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Faltan datos para restablecer la contraseña"));
+            }
+
+            boolean exito = pacienteService.completarRecuperacion(token, nuevaPass);
+            if (exito) {
+                return ResponseEntity.ok(Map.of("message", "Contraseña cambiada correctamente"));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", "Token inválido o caducado"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno al restablecer la contraseña"));
         }
-        return ResponseEntity.badRequest().body(Map.of("error", "Token inválido o caducado"));
     }
 
-
+    /**
+     * Obtiene el perfil detallado de un paciente específico mediante su ID.
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Paciente> obtenerPerfil(@PathVariable Long id) {
-        return pacienteRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> obtenerPerfil(@PathVariable Long id) {
+        try {
+            return pacienteRepository.findById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno al obtener el perfil"));
+        }
     }
 }
