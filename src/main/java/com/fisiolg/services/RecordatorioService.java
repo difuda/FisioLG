@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Servicio automatizado para la gestión y envío de recordatorios de citas.
@@ -58,16 +59,25 @@ public class RecordatorioService {
                 if (email != null && !email.isEmpty()) {
                     System.out.println("PASO 4: Intentando conectar con el servidor de correo para enviar...");
                     try {
+                        // 1. Extraemos la hora de la cita
+                        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
+                        String horaCita = c.getFechaHora().format(formatoHora);
+
+                        // 2. Montamos el texto exacto que pediste
+                        String mensaje = "Hola " + c.getPaciente().getNombre() + ",\n\n" +
+                                "Le recordamos su cita mañana a las " + horaCita + "h en Fisioterapia y Osteopatía Lucía Garza.";
+
+                        // 3. Enviamos el correo
                         emailService.enviarCorreo(
                                 email,
                                 "Recordatorio de Cita - FisioLG",
-                                "Hola " + c.getPaciente().getNombre() + ", te recordamos que tienes una cita programada para mañana."
+                                mensaje
                         );
 
                         c.setRecordatorioEnviado(true);
                         citaRepository.save(c);
 
-                        System.out.println("✅ ÉXITO: Correo enviado a " + email + " y cita actualizada.");
+                        System.out.println("✅ ÉXITO: Correo enviado a " + email + " a las " + horaCita + "h y cita actualizada.");
                     } catch (Exception e) {
                         System.out.println("❌ ERROR CRÍTICO AL ENVIAR CORREO: " + e.getMessage());
                     }
