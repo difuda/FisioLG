@@ -258,4 +258,15 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-18 19:57:04
+--
+-- Table structure for table `noticia`
+--
+
+DROP TABLE IF EXISTS `noticia`;
+CREATE TABLE `noticia` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `titulo` varchar(255) NOT NULL,
+  `contenido` text NOT NULL,
+  `fecha_publicacion` date DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

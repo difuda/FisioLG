@@ -76,6 +76,15 @@
     </div>
 
     <div class="card card-gestion shadow-sm p-3">
+        <div class="card card-gestion shadow-sm p-3 mb-4">
+            <h6 class="text-primary fw-bold mb-2"><i class="bi bi-megaphone-fill"></i> Aviso de Portada (Carrusel)</h6>
+            <p class="text-muted small mb-2">Este texto aparecerá al instante en la tarjeta verde de la página principal para que lo vean los clientes.</p>
+            <div class="input-group">
+                <input type="text" id="inputNoticiaAdmin" class="form-control" placeholder="Ej: Cerrado por vacaciones del 1 al 15 de agosto...">
+                <button class="btn btn-primary" onclick="actualizarNoticia()" id="btnGuardarNoticia">Publicar Aviso</button>
+            </div>
+            <div id="mensajeFeedbackNoticia" class="mt-2 small fw-bold d-none"></div>
+        </div>
         <div class="row g-3">
             <div class="col-md-6">
                 <label class="fw-bold mb-1">Buscar Paciente:</label>
@@ -531,6 +540,49 @@
             cargarEstadisticas();
             mostrarAlerta("Cita anulada", "info");
         });
+    }
+    // --- LÓGICA PARA ACTUALIZAR LA NOTICIA DE PORTADA ---
+    async function actualizarNoticia() {
+        const textoNoticia = document.getElementById('inputNoticiaAdmin').value.trim();
+        const btn = document.getElementById('btnGuardarNoticia');
+        const feedback = document.getElementById('mensajeFeedbackNoticia');
+
+        if (!textoNoticia) {
+            feedback.innerText = "El mensaje no puede estar vacío.";
+            feedback.className = "mt-2 small fw-bold text-danger";
+            feedback.classList.remove('d-none');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Publicando...";
+
+        try {
+            const response = await fetch('http://localhost:8080/api/noticias/actualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ texto: textoNoticia })
+            });
+
+            if (response.ok) {
+                feedback.innerText = "¡Aviso publicado correctamente en la portada!";
+                feedback.className = "mt-2 small fw-bold text-success";
+                feedback.classList.remove('d-none');
+                document.getElementById('inputNoticiaAdmin').value = ''; // Limpiamos el input
+                setTimeout(() => { feedback.classList.add('d-none'); }, 4000);
+            } else {
+                feedback.innerText = "Error al guardar la noticia en la base de datos.";
+                feedback.className = "mt-2 small fw-bold text-danger";
+                feedback.classList.remove('d-none');
+            }
+        } catch (error) {
+            feedback.innerText = "Error de conexión con el servidor.";
+            feedback.className = "mt-2 small fw-bold text-danger";
+            feedback.classList.remove('d-none');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Publicar Aviso";
+        }
     }
 
     function logout() { localStorage.clear(); window.location.href = "login.html"; }
